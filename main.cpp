@@ -7,6 +7,7 @@
 #include <MCUFRIEND_kbv.h>
 #include <TouchScreen.h>
 #include <SD.h>
+#include <math.h>
 
 #define SD_CS 10
 #define JOY_VERT  A9 // should connect A9 to pin VRx
@@ -19,6 +20,7 @@
 #define JOY_DEADZONE 64
 
 #define CURSOR_SIZE 9
+#define BULLET_SIZE 4
 
 #define DISPLAY_WIDTH  480
 #define DISPLAY_HEIGHT 320
@@ -31,6 +33,15 @@
 #define XP 8  // can be a digital pin
 
 
+#define TS_MINX 100
+#define TS_MINY 110
+#define TS_MAXX 960
+#define TS_MAXY 910
+
+// thresholds to determine if there was a touch
+#define MINPRESSURE   10
+#define MAXPRESSURE 1000
+
 
 
 
@@ -40,12 +51,19 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
 /*void redrawCursor(uint16_t colour, int x, int y);*/
 
+bool shot = false;
+
+
+
+
+
+
+
 
 struct tank
 {
 
-	int x, y;
-
+	int x, y, bullets = 0;
 
 	tank(int inputx, int inputy){
 		x = inputx;
@@ -66,7 +84,6 @@ struct tank
 		//centered we will always get a velocity of 0.
 		int velX = abs(0.002 * analogRead(JOY_HORIZ) - 10);
 		int velY = abs(0.002 * analogRead(JOY_VERT) - 10);
-		Serial.println(velX);
 		// so we only redraw the screen when we are moving
 		bool moving = false;
 
@@ -106,8 +123,6 @@ struct tank
 
 		// redrawing patch at old position.
 		if (moving){
-
-
 			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
 
@@ -118,12 +133,98 @@ struct tank
 
 		}
 
+};
+
+struct bullet
+{
+
+
+	bool active = 0;
+	int x, y, velX = 5, velY = 5;
+	int bounce = 0;
+	bullet(int inputx = 0, int inputy = 0){
+		x = inputx;
+		y = inputy;
+	}
+
+
+
+	void updateBullet(int &numBullets){
+		//Serial.println(bounce);
+		if (!active){
+			//Serial.print("notactive");
+			return;
+		}
+
+		if (bounce > 2){
+			active = 0;
+			bounce = 0;
+			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
+			//numBullets--;
+			//Serial.print("boom");
+			return;
+		}
+
+
+		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
+		x += velX;
+		y += velY;
+
+		if (x < 0){
+			x = 0;
+			velX *= -1;
+			bounce++;
+		}
+		if (x > DISPLAY_WIDTH){
+			x = DISPLAY_WIDTH;
+			velX *= -1;
+			bounce++;
+
+		}
+		if (y <=0 ){
+			y = 0;
+			velY *=-1;
+			bounce++;
+		}
+		if (y >= DISPLAY_HEIGHT){
+			y = DISPLAY_HEIGHT;
+			velY *= -1;
+			bounce++;
+		}
+
+		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
+	}
+
+
+	void fire(int tapX, int tapY){
+		float vecX = tapX - x;
+		float vecY = -1*(tapY - y);
+
+
+
+		float radAng = atan(vecY/vecX);
+
+		if (   (vecY > 0 && vecX < 0) ){
+			radAng += 3.14;
+		}
+
+ 		if (vecY < 0 && vecX < 0){
+ 			radAng -= 3.14;
+ 		}
+
+ 		if ()
+
+
+
+		active = 1;
+	}
+
 
 };
 
 
 
-tank thisTank(50, 50);
+
 
 
 void setup(){
@@ -157,11 +258,68 @@ void setup(){
 
 
 
+void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
+
+	
+
+	TSPoint touch = ts.getPoint();
+	pinMode(YP, OUTPUT);
+	pinMode(XM, OUTPUT);
+	if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE ) && Atank.bullets <= 5 ){
+		bullet bull = bullArray[Atank.bullets];
+
+		bull.x = Atank.x;
+		bull.y = Atank.y;
+
+		int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
+		int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
+
+
+
+		bull.fire(touchX, touchY);
+
+		bullArray[Atank.bullets] = bull;
+
+		Atank.bullets += 1;
+		cooldown = millis();
+
+	}
+
+
+
+}
+
 
 int main(){
 	setup();
+	tank thisTank(50, 50);
+
+	int cooldown = 0;
+ 	bullet bullArray[5] =
+ 	{
+ 		bullet(20, 20),
+ 		bullet(20, 20),
+ 		bullet(20, 20),
+ 		bullet(20, 20),
+ 		bullet(20, 20)
+
+ 	};
+
 	while(1){
 		thisTank.update();
+
+		if (millis() - cooldown > 1000){
+			readTouch(cooldown, bullArray, thisTank);
+
+		}
+
+
+		for (int i = 0; i < thisTank.bullets; i++){
+			bullArray[i].updateBullet(thisTank.bullets);
+			//Serial.println(thisTank.bullets);
+		}
+
+
 	}
 
 }
