@@ -15,7 +15,6 @@
 #define JOY_SEL   53
 
 
-
 #define JOY_CENTER   512
 #define JOY_DEADZONE 64
 
@@ -24,7 +23,6 @@
 
 #define DISPLAY_WIDTH  480
 #define DISPLAY_HEIGHT 320
-
 
 
 #define YP A3 // must be an analog pin, use "An" notation!
@@ -54,17 +52,12 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 bool shot = false;
 
 
-
-
-
 void testing(char message[]){
 	tft.setCursor(160, 160);
 	tft.setTextColor(TFT_BLUE);
 	tft.setTextSize(2);
 	tft.print(message);
 }
-
-
 
 
 
@@ -79,12 +72,11 @@ struct tank
 	}
 
 
-
-
 	void redrawCursor(uint16_t colour, int &x, int &y) {
   		tft.fillRect(x - CURSOR_SIZE/2, y - CURSOR_SIZE/2,
         CURSOR_SIZE, CURSOR_SIZE, colour);
 	}
+
 
 	void ardiUpdate(){
 		//obtaining the velocity by scaling down the values obtained from the x and y pins
@@ -105,22 +97,22 @@ struct tank
 
 		// now move the cursor
 		if (yVal < JOY_CENTER - JOY_DEADZONE) {
-		y -= (1 + velY - 9); // decrease the y coordinate of the cursor
-		moving = true;
+			y -= (1 + velY - 9); // decrease the y coordinate of the cursor
+			moving = true;
 		}
 		else if (yVal > JOY_CENTER + JOY_DEADZONE) {
-		y += 1 + velY - 6;
-		moving = true;
+			y += 1 + velY - 6;
+			moving = true;
 		}
 
 		// remember the x-reading increases as we push left
 		if (xVal > JOY_CENTER + JOY_DEADZONE) {
-		x -= (1 + velX - 6);
-		moving = true;
+			x -= (1 + velX - 6);
+			moving = true;
 		}
 		else if (xVal < JOY_CENTER - JOY_DEADZONE) {
-		x += 1 + velX - 9;
-		moving = true;
+			x += 1 + velX - 9;
+			moving = true;
 		}
 
 
@@ -168,15 +160,13 @@ struct tank
 
 
 
-
-
 struct bullet
 {
-
 
 	bool active = 0;
 	int x, y, velX = 5, velY = 5;
 	int bounce = 0;
+
 	bullet(int inputx = 0, int inputy = 0){
 		x = inputx;
 		y = inputy;
@@ -235,8 +225,25 @@ struct bullet
 		float vecY = -1*(tapY - y);
 
 
+		tft.fillRect(260, 160, 80, 80, TFT_BLACK);
+
+
+		tft.setCursor(260, 160);
+		tft.setTextColor(TFT_BLUE);
+		tft.setTextSize(2);
+		tft.print(vecX);
+		tft.setCursor(260, 200);
+		tft.print(vecY);
+
+
 
 		float radAng = atan(vecY/vecX);
+
+
+		tft.setCursor(260, 240);
+		tft.print(radAng);
+
+
 
 		if (   (vecY > 0 && vecX < 0) ){
 			radAng += 3.14;
@@ -246,17 +253,13 @@ struct bullet
  			radAng -= 3.14;
  		}
 
-
-
-
 		active = 1;
+
+
+		velX = 5*cos(radAng);
+		velY = -5*sin(radAng);
 	}
-
-
 };
-
-
-
 
 
 
@@ -284,16 +287,11 @@ void setup(){
 	Serial.println("OK!");
 
 	tft.setRotation(1);
-
 	tft.fillScreen(TFT_BLACK);
 }
 
 
-
-
 void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
-
-	
 
 	TSPoint touch = ts.getPoint();
 	pinMode(YP, OUTPUT);
@@ -317,9 +315,6 @@ void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
 		cooldown = millis();
 
 	}
-
-
-
 }
 
 
@@ -328,14 +323,11 @@ void readDesktop(tank& deskTank){
 		//testing("MESSAGE");
 		char incoming = Serial.read();
 		if (incoming == 'w'){
-				testing("WORKING");
+			testing("WORKING");
 		}
 		deskTank.desktopUpdate(incoming);
 	}
-
 }
-
-
 
 
 int main(){
@@ -367,8 +359,6 @@ int main(){
 			bullArray[i].updateBullet(thisTank.bullets);
 			//Serial.println(thisTank.bullets);
 		}
-
-
 	}
-
 }
+
