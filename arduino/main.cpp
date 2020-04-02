@@ -173,20 +173,21 @@ struct bullet
 	}
 
 
-	void updateBullet(int &numBullets){
+	int updateBullet(int &numBullets){
 		//Serial.println(bounce);
+
 		if (!active){
 			//Serial.print("notactive");
-			return;
+			return 1;
 		}
 
 		if (bounce > 2){
 			active = 0;
 			bounce = 0;
 			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
-			//numBullets--;
+			numBullets--;
 			//Serial.print("boom");
-			return;
+			return 0;
 		}
 
 
@@ -216,7 +217,9 @@ struct bullet
 			bounce++;
 		}
 
+
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
+		return 1;
 	}
 
 
@@ -305,8 +308,6 @@ void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
 		int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
 		int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
 
-
-
 		bull.fire(touchX, touchY);
 
 		bullArray[Atank.bullets] = bull;
@@ -351,13 +352,12 @@ int main(){
 		readDesktop(deskTank);
 		if (millis() - cooldown > 1000){
 			readTouch(cooldown, bullArray, thisTank);
-
 		}
 
 
-		for (int i = 0; i < thisTank.bullets; i++){
-			bullArray[i].updateBullet(thisTank.bullets);
-			//Serial.println(thisTank.bullets);
+		for (int i = 0; i < 5; i++){
+			int flag = bullArray[i].updateBullet(thisTank.bullets);
+			Serial.println(i);
 		}
 	}
 }
