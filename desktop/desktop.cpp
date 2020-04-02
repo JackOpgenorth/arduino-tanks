@@ -8,12 +8,43 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <unordered_map>
+
+SerialPort Serial("/dev/ttyACM0");
+
+void sendMovement(){
+    char c;
+    read( fileno( stdin ), &c, 1 ); //THIS LINE WAS ALSO NOT MADE BY US
+    cout << c << endl;
+    Serial.writeline("M");
+    if (c == 'w'){Serial.writeline("w");}
+    else if (c == 'a'){Serial.writeline("a");}
+    else if (c == 's'){Serial.writeline("s");}
+    else if (c == 'd'){Serial.writeline("d");}
+}
+
+/*struct point
+{
+    uint16_t x, y;
+
+
+    bool
+    operator==(const point & obj) const
+    {
+        of (x == obj.x && y == obj.y)
+    }
+
+}*/
+
+
+
 
 int main()
 {
-	SerialPort Serial("/dev/ttyACM0");
-    struct termios oldSettings, newSettings;
+    
 
+    // BEGINNING OF CODE NOT MADE BY US
+    struct termios oldSettings, newSettings;
     tcgetattr( fileno( stdin ), &oldSettings );
     newSettings = oldSettings;
     newSettings.c_lflag &= (~ICANON & ~ECHO);
@@ -21,42 +52,24 @@ int main()
 
     while ( 1 )
     {
+
         fd_set set;
         struct timeval tv;
 
         tv.tv_sec = 10;
         tv.tv_usec = 0;
-
         FD_ZERO( &set );
         FD_SET( fileno( stdin ), &set );
-
         int res = select( fileno( stdin )+1, &set, NULL, NULL, &tv );
-
+        // END OF CODE NOT MADE BY US
         if( res > 0 )
         {
-            char c;
-            read( fileno( stdin ), &c, 1 );
-            cout << c << endl;
-           // Serial.writeline("I");
+        
             
-            if (c == 'w'){Serial.writeline("w");}
-            else if (c == 'a'){Serial.writeline("a");}
-            else if (c == 's'){Serial.writeline("s");}
-            else if (c == 'd'){Serial.writeline("d");}
-
-
-
+            sendMovement();
             
-        }
-        else if( res < 0 )
-        {
-            break;
-        }
-        else
-        {
         }
     }
 
-    tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
     return 0;
 }
