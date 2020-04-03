@@ -9,6 +9,8 @@
 #include <SD.h>
 #include <math.h>
 
+#include "lcd_image.h"
+
 #define SD_CS 10
 #define JOY_VERT  A9 // should connect A9 to pin VRx
 #define JOY_HORIZ A8 // should connect A8 to pin VRy
@@ -24,6 +26,9 @@
 #define DISPLAY_WIDTH  480
 #define DISPLAY_HEIGHT 320
 
+// background image info
+#define BACK_WIDTH 2048
+#define BACK_HEIGHT 2048
 
 #define YP A3 // must be an analog pin, use "An" notation!
 #define XM A2 // must be an analog pin, use "An" notation!
@@ -46,6 +51,8 @@
 MCUFRIEND_kbv tft;
 
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
+lcd_image_t backImage = {"yeg-big.lcd", BACK_WIDTH, BACK_HEIGHT};
 
 /*void redrawCursor(uint16_t colour, int x, int y);*/
 
@@ -97,21 +104,21 @@ struct tank
 
 		// now move the cursor
 		if (yVal < JOY_CENTER - JOY_DEADZONE) {
-			y -= (1 + velY - 9); // decrease the y coordinate of the cursor
+			y -= (3 + velY - 9); // decrease the y coordinate of the cursor
 			moving = true;
 		}
 		else if (yVal > JOY_CENTER + JOY_DEADZONE) {
-			y += 1 + velY - 6;
+			y += 3 + velY - 6;
 			moving = true;
 		}
 
 		// remember the x-reading increases as we push left
 		if (xVal > JOY_CENTER + JOY_DEADZONE) {
-			x -= (1 + velX - 6);
+			x -= (3 + velX - 6);
 			moving = true;
 		}
 		else if (xVal < JOY_CENTER - JOY_DEADZONE) {
-			x += 1 + velX - 9;
+			x += 3 + velX - 9;
 			moving = true;
 		}
 
@@ -123,8 +130,15 @@ struct tank
 
 		// redrawing patch at old position.
 		if (moving){
-			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
-			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
+			//tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
+			//CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
+
+			lcd_image_draw(&backImage, &tft,
+					 oldX - CURSOR_SIZE/2,
+				 	 oldY - CURSOR_SIZE/2,
+				   oldX - CURSOR_SIZE/2, 
+				   oldY - CURSOR_SIZE/2,
+					 CURSOR_SIZE, CURSOR_SIZE);
 
 			redrawCursor(TFT_RED, x, y);
 		}
@@ -151,12 +165,23 @@ struct tank
 			if (c == 'a'){
 				x -= 5;
 			}
+
+/*
+			lcd_image_draw(&backImage, &tft,
+								 oldX - CURSOR_SIZE/2,
+							 	 oldY - CURSOR_SIZE/2,
+							   oldX - CURSOR_SIZE/2, 
+							   oldY - CURSOR_SIZE/2,
+								 CURSOR_SIZE, CURSOR_SIZE);
+*/
 			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
-			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
+			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);			
+
 			redrawCursor(TFT_RED, x, y);
 		}
 
 };
+
 
 
 
@@ -173,6 +198,19 @@ struct bullet
 	}
 
 
+	void checkCollision(struct tank tankYou) {
+
+		if ((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) {
+
+			tft.setCursor(260, 160);
+			tft.setTextColor(TFT_BLUE);
+			tft.setTextSize(2);
+			tft.print("TANK HIT!");
+
+		}
+	}
+
+
 	int updateBullet(int &numBullets){
 		//Serial.println(bounce);
 
@@ -184,6 +222,7 @@ struct bullet
 		if (bounce > 2){
 			active = 0;
 			bounce = 0;
+
 			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
 			numBullets--;
 			//Serial.print("boom");
@@ -191,7 +230,17 @@ struct bullet
 		}
 
 
-		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
+
+		lcd_image_draw(&backImage, &tft,
+							 x - CURSOR_SIZE/2,
+						 	 y - CURSOR_SIZE/2,
+						   x - CURSOR_SIZE/2, 
+						   y - CURSOR_SIZE/2,
+							 CURSOR_SIZE, CURSOR_SIZE);
+
+
+
+		//tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
 		x += velX;
 		y += velY;
 
@@ -219,6 +268,7 @@ struct bullet
 
 
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
+
 		return 1;
 	}
 
@@ -228,23 +278,23 @@ struct bullet
 		float vecY = -1*(tapY - y);
 
 
-		tft.fillRect(260, 160, 80, 80, TFT_BLACK);
+		//tft.fillRect(260, 160, 80, 80, TFT_BLACK);
 
 
-		tft.setCursor(260, 160);
-		tft.setTextColor(TFT_BLUE);
-		tft.setTextSize(2);
-		tft.print(vecX);
-		tft.setCursor(260, 200);
-		tft.print(vecY);
+		//tft.setCursor(260, 160);
+		//tft.setTextColor(TFT_BLUE);
+		//tft.setTextSize(2);
+		//tft.print(vecX);
+		//tft.setCursor(260, 200);
+		//tft.print(vecY);
 
 
 
 		float radAng = atan(vecY/vecX);
 
 
-		tft.setCursor(260, 240);
-		tft.print(radAng);
+		//tft.setCursor(260, 240);
+		//tft.print(radAng);
 
 
 
@@ -290,7 +340,8 @@ void setup(){
 	Serial.println("OK!");
 
 	tft.setRotation(1);
-	tft.fillScreen(TFT_BLACK);
+	lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+
 }
 
 
@@ -299,7 +350,7 @@ void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
 	TSPoint touch = ts.getPoint();
 	pinMode(YP, OUTPUT);
 	pinMode(XM, OUTPUT);
-	if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE ) && Atank.bullets <= 5 ){
+	if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE ) && Atank.bullets <= 3 ){
 		bullet bull = bullArray[Atank.bullets];
 
 		bull.x = Atank.x;
@@ -357,6 +408,7 @@ int main(){
 
 		for (int i = 0; i < 5; i++){
 			int flag = bullArray[i].updateBullet(thisTank.bullets);
+			bullArray[i].checkCollision(thisTank);
 			Serial.println(i);
 		}
 	}
