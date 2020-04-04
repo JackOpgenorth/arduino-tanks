@@ -209,7 +209,6 @@ int main(){
         }
         else
         {
-            printf( "Select timeout\n" );
         }
     }
 

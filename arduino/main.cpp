@@ -175,8 +175,7 @@ struct tank
 								 CURSOR_SIZE, CURSOR_SIZE);
 			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
-			*/
-			redrawCursor(TFT_RED, x, y); 
+			redrawCursor(TFT_RED, x, y); */
 		}
 
 };
@@ -369,7 +368,7 @@ void readDesktop(tank& deskTank){
 		if (incoming == 'w'){
 			//testing("WORKING");
 		}
-
+		Serial.println(incoming);
 		deskTank.desktopUpdate(incoming);
 	}
 }
