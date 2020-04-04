@@ -1,4 +1,5 @@
-build-mega2560/main.cpp.o: main.cpp \
+build-mega2560/lcd_image.cpp.o: lcd_image.cpp \
+ /home/cmput274/arduino-ua/libraries/Adafruit_GFX/Adafruit_GFX.h \
  /usr/share/arduino/hardware/arduino//cores/arduino/Arduino.h \
  /usr/share/arduino/hardware/arduino//cores/arduino/binary.h \
  /usr/share/arduino/hardware/arduino//cores/arduino/WCharacter.h \
@@ -9,13 +10,11 @@ build-mega2560/main.cpp.o: main.cpp \
  /usr/share/arduino/hardware/arduino//cores/arduino/Printable.h \
  /usr/share/arduino/hardware/arduino//cores/arduino/new.h \
  /usr/share/arduino/hardware/arduino//variants/mega/pins_arduino.h \
- /home/cmput274/arduino-ua/libraries/Adafruit_GFX/Adafruit_GFX.h \
  /usr/share/arduino/hardware/arduino//cores/arduino/Print.h \
  /home/cmput274/arduino-ua/libraries/Adafruit_GFX/gfxfont.h \
  /home/cmput274/arduino-ua/libraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h \
- /home/cmput274/arduino-ua/libraries/TouchScreen/TouchScreen.h \
- /home/cmput274/arduino-ua/libraries/SD/SD.h \
  /usr/share/arduino/libraries/SPI/SPI.h \
+ /home/cmput274/arduino-ua/libraries/SD/SD.h \
  /home/cmput274/arduino-ua/libraries/SD/utility/SdFat.h \
  /home/cmput274/arduino-ua/libraries/SD/utility/Sd2Card.h \
  /home/cmput274/arduino-ua/libraries/SD/utility/Sd2PinMap.h \

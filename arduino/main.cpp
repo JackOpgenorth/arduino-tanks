@@ -9,6 +9,8 @@
 #include <SD.h>
 #include <math.h>
 
+#include "lcd_image.h"
+
 #define SD_CS 10
 #define JOY_VERT  A9 // should connect A9 to pin VRx
 #define JOY_HORIZ A8 // should connect A8 to pin VRy
@@ -23,6 +25,9 @@
 
 #define DISPLAY_WIDTH  480
 #define DISPLAY_HEIGHT 320
+
+#define BACK_WIDTH 2048
+#define BACK_HEIGHT 2048
 
 
 #define YP A3 // must be an analog pin, use "An" notation!
@@ -40,12 +45,14 @@
 #define MINPRESSURE   10
 #define MAXPRESSURE 1000
 
-
+#define BLOCK_SIZE  10
 
 
 MCUFRIEND_kbv tft;
 
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
+lcd_image_t backImage = {"yeg-big.lcd", BACK_WIDTH, BACK_HEIGHT};
 
 /*void redrawCursor(uint16_t colour, int x, int y);*/
 
@@ -123,8 +130,15 @@ struct tank
 
 		// redrawing patch at old position.
 		if (moving){
-			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
-			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
+			//tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
+			//CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
+
+			lcd_image_draw(&backImage, &tft,
+					 oldX - CURSOR_SIZE/2,
+				 	 oldY - CURSOR_SIZE/2,
+				   oldX - CURSOR_SIZE/2, 
+				   oldY - CURSOR_SIZE/2,
+					 CURSOR_SIZE, CURSOR_SIZE);
 
 			redrawCursor(TFT_RED, x, y);
 		}
@@ -151,9 +165,18 @@ struct tank
 			if (c == 'a'){
 				x -= 5;
 			}
+
+			/*
+			lcd_image_draw(&backImage, &tft,
+								 oldX - CURSOR_SIZE/2,
+							 	 oldY - CURSOR_SIZE/2,
+							   oldX - CURSOR_SIZE/2, 
+							   oldY - CURSOR_SIZE/2,
+								 CURSOR_SIZE, CURSOR_SIZE);
 			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
-			redrawCursor(TFT_RED, x, y);
+			*/
+			redrawCursor(TFT_RED, x, y); 
 		}
 
 };
@@ -172,6 +195,18 @@ struct bullet
 		y = inputy;
 	}
 
+	void checkCollision(struct tank tankYou) {
+
+		if ((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) {
+
+			tft.setCursor(260, 160);
+			tft.setTextColor(TFT_BLUE);
+			tft.setTextSize(2);
+			tft.print("TANK HIT!");
+
+		}
+	}
+	
 
 	int updateBullet(int &numBullets){
 		//Serial.println(bounce);
@@ -189,6 +224,13 @@ struct bullet
 			//Serial.print("boom");
 			return 0;
 		}
+
+				lcd_image_draw(&backImage, &tft,
+							 x - CURSOR_SIZE/2,
+						 	 y - CURSOR_SIZE/2,
+						   x - CURSOR_SIZE/2, 
+						   y - CURSOR_SIZE/2,
+							 CURSOR_SIZE, CURSOR_SIZE);
 
 
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
@@ -266,6 +308,7 @@ struct bullet
 
 
 
+
 void setup(){
 	init();
 
@@ -290,7 +333,7 @@ void setup(){
 	Serial.println("OK!");
 
 	tft.setRotation(1);
-	tft.fillScreen(TFT_BLACK);
+	lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 }
 
 
@@ -324,17 +367,100 @@ void readDesktop(tank& deskTank){
 		//testing("MESSAGE");
 		char incoming = Serial.read();
 		if (incoming == 'w'){
-			testing("WORKING");
+			//testing("WORKING");
 		}
+
 		deskTank.desktopUpdate(incoming);
 	}
 }
 
+void readRect(){
+	char rectInfo[50];
+	int i = 0;
+	while(1){
+		if (Serial.available()){
+			char incoming = Serial.read();
+			if (incoming == '\n'){
+				break;
+			}
+
+			rectInfo[i] = incoming;
+			i++;
+			rectInfo[i] = 0;
+
+		}
+	}
+	// parse
+	String rectStr = rectInfo;
+	String xStr = rectStr.substring(0, rectStr.indexOf(','));
+	rectStr = rectStr.substring(rectStr.indexOf(" ", 1));
+	String yStr = rectStr.substring(1, rectStr.indexOf(','));
+	rectStr = rectStr.substring(rectStr.indexOf(" ", 1));
+	String wStr = rectStr.substring(1, rectStr.indexOf(','));
+	Serial.println(rectStr);
+	Serial.println(wStr);
+	rectStr = rectStr.substring(rectStr.indexOf(" ", 1));
+
+	String lStr = rectStr.substring(1, rectStr.indexOf(','));
+	
+	//testing(str);	
+	tft.fillRect(xStr.toInt(), yStr.toInt(), wStr.toInt(), lStr.toInt(), TFT_BLUE );
+
+}
+
+
+
+
+void wait_for_rectangles(){
+	bool waiting = 1;
+	char incoming;
+	while (waiting){
+		if (Serial.available()){
+			incoming = Serial.read();
+			Serial.println(incoming);
+			if (incoming == 'R'){
+				readRect();
+			}
+			if (incoming == 'F'){
+				break;
+			}
+
+		}
+	}
+
+
+}
+
+// returns 1 if not in invalid position
+// 0 otherwise
+int check_xy(int x, int y){
+	Serial.print("P");
+	Serial.print(x);
+	Serial.print(", ");
+	Serial.println(y);
+
+	char incoming;
+	while (1){
+		if (Serial.available()){
+			incoming = Serial.read();
+		}
+	}
+
+	return 1;
+}
+
+
 
 int main(){
 	setup();
+	// let the desktop know we are ready
+	Serial.println("Y\n");
+
+	wait_for_rectangles();
 	tank thisTank(50,150);
 	tank deskTank(200,150);
+
+
 	
 	int cooldown = 0;
  	bullet bullArray[5] =
@@ -346,18 +472,28 @@ int main(){
  		bullet(20, 20)
 
  	};
-
+ 	//check_xy(100, 100);
 	while(1){
 		thisTank.ardiUpdate();
-		readDesktop(deskTank);
+
+		if (Serial.available()){
+			char incoming = Serial.read();
+
+			if (incoming == 'M'){
+				
+				readDesktop(deskTank);
+			}	
+		}
+
+
+
+		
 		if (millis() - cooldown > 1000){
 			readTouch(cooldown, bullArray, thisTank);
 		}
 
-
 		for (int i = 0; i < 5; i++){
 			int flag = bullArray[i].updateBullet(thisTank.bullets);
-			Serial.println(i);
 		}
 	}
 }
