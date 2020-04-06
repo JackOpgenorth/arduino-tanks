@@ -58,6 +58,8 @@ lcd_image_t backImage = {"yeg-big.lcd", BACK_WIDTH, BACK_HEIGHT};
 
 bool shot = false;
 
+char check_xy(int x, int y); //forward declaration
+bool check_boundries(int &x, int &y);
 
 void testing(char message[]){
 	tft.setCursor(160, 160);
@@ -89,6 +91,8 @@ struct tank
 		//obtaining the velocity by scaling down the values obtained from the x and y pins
 		//so we won't go too fast, then subtracting so that while the joystick is
 		//centered we will always get a velocity of 0.
+
+
 		int velX = abs(0.002 * analogRead(JOY_HORIZ) - 10);
 		int velY = abs(0.002 * analogRead(JOY_VERT) - 10);
 		// so we only redraw the screen when we are moving
@@ -102,7 +106,7 @@ struct tank
 		int oldY = y;
 		int oldX = x;
 
-		// now move the cursor
+
 		if (yVal < JOY_CENTER - JOY_DEADZONE) {
 			y -= (1 + velY - 9); // decrease the y coordinate of the cursor
 			moving = true;
@@ -112,7 +116,8 @@ struct tank
 			moving = true;
 		}
 
-		// remember the x-reading increases as we push left
+	// remember the x-reading increases as we push left
+
 		if (xVal > JOY_CENTER + JOY_DEADZONE) {
 			x -= (1 + velX - 6);
 			moving = true;
@@ -122,30 +127,26 @@ struct tank
 			moving = true;
 		}
 
-
-		// check if at edge, if so, redraw next section
-
-		// draw a small patch of the Edmonton map at the old cursor position before
-		// drawing a red rectangle at the new cursor position
+		check_boundries(x, y);
 
 		// redrawing patch at old position.
 		if (moving){
 			//tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 			//CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
-
+/*
 			lcd_image_draw(&backImage, &tft,
 					 oldX - CURSOR_SIZE/2,
 				 	 oldY - CURSOR_SIZE/2,
 				   oldX - CURSOR_SIZE/2, 
 				   oldY - CURSOR_SIZE/2,
 					 CURSOR_SIZE, CURSOR_SIZE);
-
+*/
 			redrawCursor(TFT_RED, x, y);
 		}
 
-		delay(20);
+			delay(20);
 
-		}
+	}
 
 
 		void desktopUpdate(char c){
@@ -174,8 +175,8 @@ struct tank
 							   oldY - CURSOR_SIZE/2,
 								 CURSOR_SIZE, CURSOR_SIZE);
 			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
-			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
-			redrawCursor(TFT_RED, x, y); */
+			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK); */
+			redrawCursor(TFT_RED, x, y); 
 		}
 
 };
@@ -224,12 +225,12 @@ struct bullet
 			return 0;
 		}
 
-				lcd_image_draw(&backImage, &tft,
+/*				lcd_image_draw(&backImage, &tft,
 							 x - CURSOR_SIZE/2,
 						 	 y - CURSOR_SIZE/2,
 						   x - CURSOR_SIZE/2, 
 						   y - CURSOR_SIZE/2,
-							 CURSOR_SIZE, CURSOR_SIZE);
+							 CURSOR_SIZE, CURSOR_SIZE);*/
 
 
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
@@ -257,6 +258,18 @@ struct bullet
 			velY *= -1;
 			bounce++;
 		}
+
+		//for (int i = 0; i < 5; i++){
+/*			char flag = check_xy(x, y);
+			if (flag == 'S'){velX *= -1;}
+			if (flag == 'T'){velY *= -1;}
+			flag = check_xy(x, y);
+			if (flag == 'S'){velX *= -1;}
+			if (flag == 'T'){velY *= -1;}*/
+
+
+		//}
+
 
 
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
@@ -332,8 +345,30 @@ void setup(){
 	Serial.println("OK!");
 
 	tft.setRotation(1);
-	lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+	tft.fillScreen(TFT_BLACK);
+	//lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 }
+
+bool check_boundries(int &x, int &y){
+	if (x > DISPLAY_WIDTH - 4){
+		x = DISPLAY_WIDTH - 4;
+		return 0;
+	}
+	if (x < 4){
+		x = 4;
+		return 0;
+	}
+	if (y > DISPLAY_HEIGHT - 4){
+		y = DISPLAY_HEIGHT - 4;
+		return 0;
+	}
+	if (y < 4){
+		y = 4;
+		return 0;
+	}
+	return 1;
+}
+
 
 
 void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
@@ -365,9 +400,6 @@ void readDesktop(tank& deskTank){
 	if (Serial.available()){
 		//testing("MESSAGE");
 		char incoming = Serial.read();
-		if (incoming == 'w'){
-			//testing("WORKING");
-		}
 		Serial.println(incoming);
 		deskTank.desktopUpdate(incoming);
 	}
@@ -430,22 +462,33 @@ void wait_for_rectangles(){
 
 }
 
-// returns 1 if not in invalid position
-// 0 otherwise
-int check_xy(int x, int y){
-	Serial.print("P");
+char check_xy(int x, int y){
+	Serial.print("P ");
 	Serial.print(x);
 	Serial.print(", ");
 	Serial.println(y);
-
 	char incoming;
 	while (1){
 		if (Serial.available()){
 			incoming = Serial.read();
+			if (incoming == 'V'){
+			
+				
+				return incoming;
+			}
+			else if (incoming == 'N'){
+
+				// need to wait just a split second until we are ready to read
+				while (!Serial.available()){
+					continue;
+				}
+				incoming = Serial.read();
+				
+				return incoming;
+			}
 		}
 	}
 
-	return 1;
 }
 
 
@@ -471,7 +514,7 @@ int main(){
  		bullet(20, 20)
 
  	};
- 	//check_xy(100, 100);
+ 	check_xy(220, 178);
 	while(1){
 		thisTank.ardiUpdate();
 
