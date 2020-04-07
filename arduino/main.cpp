@@ -56,9 +56,9 @@ lcd_image_t backImage = {"yeg-big.lcd", BACK_WIDTH, BACK_HEIGHT};
 
 /*void redrawCursor(uint16_t colour, int x, int y);*/
 
-bool shot = false;
 
-char check_xy(int x, int y); //forward declaration
+//forward declaration of a few functions is needed
+char check_xy(int x, int y); 
 bool check_boundries(int &x, int &y);
 
 void testing(char message[]){
@@ -69,34 +69,55 @@ void testing(char message[]){
 }
 
 
+// hold almost all information about the "tanks"
 
 struct tank
 {
 
-	int x, y, bullets = 0;
+	int x, y, bullets = 0; // bullets refers to the number of bullets
 
+
+	// constructer
 	tank(int inputx, int inputy){
 		x = inputx;
 		y = inputy;
 	}
+/*
+	   Description: redraws the square at the specified posititon,
+	   				taken entirely from major assignment 1
 
-
+	   Arguments: colour: what colour we want the square
+	   			  x: x position of where we will be drawing
+	   			  y: y position of where we will bed drawing
+	   Returns: nothing
+*/
 	void redrawCursor(uint16_t colour, int &x, int &y) {
   		tft.fillRect(x - CURSOR_SIZE/2, y - CURSOR_SIZE/2,
         CURSOR_SIZE, CURSOR_SIZE, colour);
 	}
 
 
+
+/*
+	   Description: Updates the position of the arduino tank based
+	   				off of the joystick, much of this was taken from major
+	   				assignment 1
+
+	   Arguments: none
+	   Returns: none
+*/
+
 	void ardiUpdate(){
-		//obtaining the velocity by scaling down the values obtained from the x and y pins
-		//so we won't go too fast, then subtracting so that while the joystick is
-		//centered we will always get a velocity of 0.
 
 
+		// reading from joystuck and manipulating the value found so we get
+		// an appropiate velocity
 		int velX = abs(0.002 * analogRead(JOY_HORIZ) - 10);
 		int velY = abs(0.002 * analogRead(JOY_VERT) - 10);
-		// so we only redraw the screen when we are moving
-		bool moving = false;
+
+		
+		bool moving = false; // so we only redraw the screen when we are moving
+
 
 		int xVal = analogRead(JOY_HORIZ);
 		int yVal = analogRead(JOY_VERT);
@@ -106,11 +127,17 @@ struct tank
 		int oldY = y;
 		int oldX = x;
 
+		// below we change the x and y position according to the velocity
+		// the random literals in the expressions were just chosen so that the square would
+		// not move super fast or slow
+
 
 		if (yVal < JOY_CENTER - JOY_DEADZONE) {
 			y -= (1 + velY - 9); // decrease the y coordinate of the cursor
 			moving = true;
 		}
+
+
 		else if (yVal > JOY_CENTER + JOY_DEADZONE) {
 			y += 1 + velY - 6;
 			moving = true;
@@ -118,21 +145,25 @@ struct tank
 
 	// remember the x-reading increases as we push left
 
+
 		if (xVal > JOY_CENTER + JOY_DEADZONE) {
 			x -= (1 + velX - 6);
 			moving = true;
 		}
+
+		//  moving right
 		else if (xVal < JOY_CENTER - JOY_DEADZONE) {
 			x += 1 + velX - 9;
 			moving = true;
 		}
 
-		check_boundries(x, y);
+
+		check_boundries(x, y); // make sure we have not hit the top or bottom
 
 		// redrawing patch at old position.
 		if (moving){
-			//tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
-			//CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
+			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
+			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
 /*
 			lcd_image_draw(&backImage, &tft,
 					 oldX - CURSOR_SIZE/2,
@@ -149,23 +180,33 @@ struct tank
 	}
 
 
-		void desktopUpdate(char c){
+
+
+/*
+	   Description: Updates information for the desktop square according to keyboard input from
+	   				the desktop
+	   Arguments: direciton: determines which way the square will move, will be w, a, s, or d
+	   Returns: none
+*/
+		void desktopUpdate(char direction){
 			int oldY = y;
 			int oldX = x;
-			if (c == 'w'){
+			if (direction == 'w'){
 				y -= 5;
 			}
-			if (c == 's'){
+			if (direction == 's'){
 				y += 5;
 			}
 			
-			if (c == 'd'){
+			if (direction == 'd'){
 				x += 5;
 			
 			}
-			if (c == 'a'){
+			if (direction == 'a'){
 				x -= 5;
 			}
+
+			redrawCursor(TFT_BLACK, oldX, oldY); 
 
 			/*
 			lcd_image_draw(&backImage, &tft,
@@ -176,20 +217,24 @@ struct tank
 								 CURSOR_SIZE, CURSOR_SIZE);
 			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK); */
+
 			redrawCursor(TFT_RED, x, y); 
+
+
 		}
 
 };
 
 
-
+// keeps track of most of the information related to the bullets
 struct bullet
 {
 
-	bool active = 0;
-	int x, y, velX = 5, velY = 5;
-	int bounce = 0;
+	bool active = 0; // 0 means the bullet is not supposed to be on the screen
+	int x, y, velX = 3, velY = 3;
+	int bounce = 0; // if a bullet bounces twice, we get rid of it
 
+	// constructor
 	bullet(int inputx = 0, int inputy = 0){
 		x = inputx;
 		y = inputy;
@@ -208,19 +253,27 @@ struct bullet
 	}
 	
 
+	/*
+	   Description: Updates information about the bullet
+	   Arguments: &numbullett: the number of bullets of a tank, may be subtracted from
+	   			  if we end up destroying the bullet
+
+	   Returns:
+*/
+
 	int updateBullet(int &numBullets){
 		//Serial.println(bounce);
 
-		if (!active){
-			//Serial.print("notactive");
+		if (!active){ // bullet isn't actually active, so don't do anything
 			return 1;
 		}
 
-		if (bounce > 2){
+
+		if (bounce > 2){ // bullet bounced 3 times and shoild be destroyed
 			active = 0;
 			bounce = 0;
 			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
-			numBullets--;
+			numBullets--; // this will go too whatever tank shot the bullet
 			//Serial.print("boom");
 			return 0;
 		}
@@ -232,46 +285,45 @@ struct bullet
 						   y - CURSOR_SIZE/2,
 							 CURSOR_SIZE, CURSOR_SIZE);*/
 
+	// draws over the old position of the bullet
+		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK); 
 
-		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
-		x += velX;
-		y += velY;
 
-		if (x < 0){
+		if (x < 0){// we hit the right boundry
 			x = 0;
 			velX *= -1;
 			bounce++;
 		}
-		if (x > DISPLAY_WIDTH){
+		if (x > DISPLAY_WIDTH){// we hit the left boundry
 			x = DISPLAY_WIDTH;
 			velX *= -1;
 			bounce++;
 
 		}
-		if (y <=0 ){
+		if (y <= 0 ){// we hit the top boundry
 			y = 0;
-			velY *=-1;
+			velY *= -1;
 			bounce++;
 		}
-		if (y >= DISPLAY_HEIGHT){
+		if (y >= DISPLAY_HEIGHT){// we hit the bottom boundry
 			y = DISPLAY_HEIGHT;
 			velY *= -1;
 			bounce++;
 		}
 
-		//for (int i = 0; i < 5; i++){
-/*			char flag = check_xy(x, y);
-			if (flag == 'S'){velX *= -1;}
-			if (flag == 'T'){velY *= -1;}
-			flag = check_xy(x, y);
-			if (flag == 'S'){velX *= -1;}
-			if (flag == 'T'){velY *= -1;}*/
+
+			
+		// communicate with the desktop to see if we have hitn a rectangle
+		char flag = check_xy(x, y);
 
 
-		//}
+		if (flag == 'S'){velX *= -1;}// we hit the left or right side
+		if (flag == 'T'){velY *= -1;}// we hit the top or bottom
 
 
-
+		// finally, update the position of the bullet and draw it
+		x += velX;
+		y += velY;
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
 		return 1;
 	}
@@ -346,8 +398,18 @@ void setup(){
 
 	tft.setRotation(1);
 	tft.fillScreen(TFT_BLACK);
+	tft.drawLine(DISPLAY_WIDTH/2, 0, DISPLAY_WIDTH/2, DISPLAY_HEIGHT, TFT_BLUE);
 	//lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 }
+
+	/*
+	   Description: very simple function to check if a square hit the boundry of the screen
+	   Arguments: x: x position we want to check
+	   			  y: y position we want to check
+
+
+	   Returns: 0 if we hit a boundry, 1 otherwise
+*/
 
 bool check_boundries(int &x, int &y){
 	if (x > DISPLAY_WIDTH - 4){
@@ -370,24 +432,26 @@ bool check_boundries(int &x, int &y){
 }
 
 
-
-void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
+// NEEDS TO BE CHANGED TO ACCOMIDATE THE DESKTOP
+void readTouch(int &cooldown, bullet ardiBull[], tank &Atank){
 
 	TSPoint touch = ts.getPoint();
 	pinMode(YP, OUTPUT);
 	pinMode(XM, OUTPUT);
 	if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE ) && Atank.bullets <= 5 ){
-		bullet bull = bullArray[Atank.bullets];
 
-		bull.x = Atank.x;
-		bull.y = Atank.y;
 
 		int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
 		int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
 
+		bullet bull = ardiBull[Atank.bullets];
+
+		bull.x = Atank.x;
+		bull.y = Atank.y;
+
 		bull.fire(touchX, touchY);
 
-		bullArray[Atank.bullets] = bull;
+		ardiBull[Atank.bullets] = bull;
 
 		Atank.bullets += 1;
 		cooldown = millis();
@@ -395,33 +459,49 @@ void readTouch(int &cooldown, bullet bullArray[], tank &Atank){
 	}
 }
 
+	/*
+	   Description: Reads for keyboard input from the desktop and updates the desktop square accordingly
+
+	   Arguments: deskTank: the desktop square
+
+	   Returns: nothing
+*/
+
 
 void readDesktop(tank& deskTank){
 	if (Serial.available()){
 		//testing("MESSAGE");
-		char incoming = Serial.read();
-		Serial.println(incoming);
+		char incoming = Serial.read();// w, a, s, or d
 		deskTank.desktopUpdate(incoming);
 	}
 }
 
+
+	/*
+	   Description: Reads information about a rectangle from the desktop and then draws said rectangle
+	   Arguments: nothing
+
+
+	   Returns:nothing
+*/
+
 void readRect(){
-	char rectInfo[50];
+	char rectInfo[50]; // to hold message from desktop
 	int i = 0;
 	while(1){
 		if (Serial.available()){
 			char incoming = Serial.read();
-			if (incoming == '\n'){
+			if (incoming == '\n'){ // newlines signals end of message
 				break;
 			}
-
+			// read in one char at a time
 			rectInfo[i] = incoming;
 			i++;
 			rectInfo[i] = 0;
 
 		}
 	}
-	// parse
+	// parse message
 	String rectStr = rectInfo;
 	String xStr = rectStr.substring(0, rectStr.indexOf(','));
 	rectStr = rectStr.substring(rectStr.indexOf(" ", 1));
@@ -434,25 +514,33 @@ void readRect(){
 
 	String lStr = rectStr.substring(1, rectStr.indexOf(','));
 	
-	//testing(str);	
+
+	// draw rectangle
 	tft.fillRect(xStr.toInt(), yStr.toInt(), wStr.toInt(), lStr.toInt(), TFT_BLUE );
 
 }
 
 
+	/*
+	   Description: waits for the desktop to signal it is about to send a rectangle;
+	   Arguments: none
 
+
+	   Returns: none
+*/
 
 void wait_for_rectangles(){
 	bool waiting = 1;
 	char incoming;
-	while (waiting){
+	while (waiting){ // keep waiting until we get a signal from the desktop
 		if (Serial.available()){
+
 			incoming = Serial.read();
 			Serial.println(incoming);
-			if (incoming == 'R'){
+			if (incoming == 'R'){// desktop says its sending a rectangle
 				readRect();
 			}
-			if (incoming == 'F'){
+			if (incoming == 'F'){// desktop says its done sending reactangles
 				break;
 			}
 
@@ -462,29 +550,41 @@ void wait_for_rectangles(){
 
 }
 
+
+	/*
+	   Description: sends info about a point to the desktop, which then tells the arduino 
+	   				wheather or not this is a "valid" point. (i.e have we just crashed into a 
+	   				rectangle)
+	   Arguments: x: x position we want to check
+	   			  y: y position we want to check
+
+
+	   Returns: incoming: will tell us wheather the point is valid or not	*/			
 char check_xy(int x, int y){
+	// sending point to dekstop
 	Serial.print("P ");
 	Serial.print(x);
 	Serial.print(", ");
 	Serial.println(y);
 	char incoming;
+
+	// wait for response
 	while (1){
 		if (Serial.available()){
 			incoming = Serial.read();
-			if (incoming == 'V'){
-			
-				
+			if (incoming == 'V'){// point is valid
 				return incoming;
 			}
-			else if (incoming == 'N'){
+			else if (incoming == 'N'){// point is nbot valid
 
 				// need to wait just a split second until we are ready to read
+				// in the next part of the message
 				while (!Serial.available()){
 					continue;
 				}
 				incoming = Serial.read();
-				
-				return incoming;
+				return incoming; //'S' if we hit the side or a recangle or 'T' if we hit the top
+								 // or bottom
 			}
 		}
 	}
@@ -498,14 +598,16 @@ int main(){
 	// let the desktop know we are ready
 	Serial.println("Y\n");
 
-	wait_for_rectangles();
+	wait_for_rectangles();// read in and draw all the rectangles
+
+	// get squares ready
 	tank thisTank(50,150);
 	tank deskTank(200,150);
 
 
-	
+	// get bullets ready
 	int cooldown = 0;
- 	bullet bullArray[5] =
+ 	bullet ardiBull[5] =
  	{
  		bullet(20, 20),
  		bullet(20, 20),
@@ -514,15 +616,23 @@ int main(){
  		bullet(20, 20)
 
  	};
- 	check_xy(220, 178);
+ 	bullet deskBull[5] = 
+ 	{
+  		bullet(20, 20),
+ 		bullet(20, 20),
+ 		bullet(20, 20),
+ 		bullet(20, 20),
+ 		bullet(20, 20)	
+ 	};
+
+ 	// main loop
 	while(1){
 		thisTank.ardiUpdate();
 
-		if (Serial.available()){
+		if (Serial.available()){// check if desktop is sending somthing
 			char incoming = Serial.read();
 
-			if (incoming == 'M'){
-				
+			if (incoming == 'M'){ //check if desktop is telling us to move its square
 				readDesktop(deskTank);
 			}	
 		}
@@ -531,11 +641,11 @@ int main(){
 
 		
 		if (millis() - cooldown > 1000){
-			readTouch(cooldown, bullArray, thisTank);
+			readTouch(cooldown, ardiBull, thisTank);
 		}
 
-		for (int i = 0; i < 5; i++){
-			int flag = bullArray[i].updateBullet(thisTank.bullets);
+		for (int i = 0; i < 5; i++){//update all the bullets
+			int flag = ardiBull[i].updateBullet(thisTank.bullets);
 		}
 	}
 }
