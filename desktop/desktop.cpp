@@ -143,12 +143,14 @@ void setup_rectangle(rectangle rect, unordered_set<point> &archive){
 
     //top and bottom points
     for (int i = 0; i <= rect.width; i++){
-        p.face = "T";
-        p.y = rect.yo;
-        p.x = rect.xo + i;
-        archive.insert(p);
-        p.y = rect.yo + rect.length;
-        archive.insert(p);
+        for (int j = 0; j < 5; j++){
+            p.face = "T";
+            p.y = rect.yo + j;
+            p.x = rect.xo + i;
+            archive.insert(p);
+            p.y = rect.yo + rect.length - j;
+            archive.insert(p);
+        }
     }
     // left and right points
     for (int i = 0; i < rect.length; i++){
@@ -162,7 +164,8 @@ void setup_rectangle(rectangle rect, unordered_set<point> &archive){
             p.x = rect.xo + j;
             archive.insert(p);
             //cout  << "LEFT POINT "<< p.x << "," << p.y << endl;
-            p.x = rect.xo + rect.width;
+
+            p.x = rect.xo + rect.width - j;
             archive.insert(p);
             //cout << "RIGHT POINT " <<  p.x << "," << p.y << endl;
         }
