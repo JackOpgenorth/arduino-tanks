@@ -274,7 +274,6 @@ struct bullet
 			bounce = 0;
 			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
 			numBullets--; // this will go too whatever tank shot the bullet
-			//Serial.print("boom");
 			return 0;
 		}
 
@@ -433,30 +432,21 @@ bool check_boundries(int &x, int &y){
 
 
 // NEEDS TO BE CHANGED TO ACCOMIDATE THE DESKTOP
-void readTouch(int &cooldown, bullet ardiBull[], tank &Atank){
+void process_shot(int touchX, int touchY, tank &Atank, bullet bulls[], int &cooldown){
+	if (Atank.bullets >= 2 ||  millis() - cooldown < 1000){return;}
+	bullet bull = bulls[Atank.bullets];
 
-	TSPoint touch = ts.getPoint();
-	pinMode(YP, OUTPUT);
-	pinMode(XM, OUTPUT);
-	if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE ) && Atank.bullets <= 5 ){
+	bull.x = Atank.x;
+	bull.y = Atank.y;
+
+	bull.fire(touchX, touchY);
+
+	bulls[Atank.bullets] = bull;
+
+	Atank.bullets += 1;
+	cooldown = millis();
 
 
-		int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
-		int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
-
-		bullet bull = ardiBull[Atank.bullets];
-
-		bull.x = Atank.x;
-		bull.y = Atank.y;
-
-		bull.fire(touchX, touchY);
-
-		ardiBull[Atank.bullets] = bull;
-
-		Atank.bullets += 1;
-		cooldown = millis();
-
-	}
 }
 
 	/*
@@ -602,14 +592,14 @@ int main(){
 
 	// get squares ready
 	tank thisTank(50,150);
-	tank deskTank(200,150);
+	tank deskTank(300, 150);
 
 
 	// get bullets ready
-	int cooldown = 0;
+	int ardiCooldown = 0, deskCooldown = 0;
  	bullet ardiBull[5] =
  	{
- 		bullet(20, 20),
+ 		bullet(20, 20), // the starting position of the bullets don't actually matter
  		bullet(20, 20),
  		bullet(20, 20),
  		bullet(20, 20),
@@ -637,15 +627,29 @@ int main(){
 			}	
 		}
 
+			TSPoint touch = ts.getPoint();
+			pinMode(YP, OUTPUT);
+			pinMode(XM, OUTPUT);
+		if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE )){
+			int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
+			int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
 
+			if (touchX > DISPLAY_WIDTH/2){
+				process_shot(touchX, touchY, thisTank, ardiBull, ardiCooldown);
+			}
+			else if (touchX < DISPLAY_WIDTH/2){
+				process_shot(touchX, touchY, deskTank, deskBull, deskCooldown);
+			}
 
-		
-		if (millis() - cooldown > 1000){
-			readTouch(cooldown, ardiBull, thisTank);
 		}
 
+		
+
+
+
 		for (int i = 0; i < 5; i++){//update all the bullets
-			int flag = ardiBull[i].updateBullet(thisTank.bullets);
+			ardiBull[i].updateBullet(thisTank.bullets);
+			deskBull[i].updateBullet(thisTank.bullets);
 		}
 	}
 }
