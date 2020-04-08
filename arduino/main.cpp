@@ -69,12 +69,23 @@ void testing(char message[]){
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
 // hold almost all information about the "tanks"
 
 struct tank
 {
 
-	int x, y, bullets = 0; // bullets refers to the number of bullets
+	int x, y, bullets = 0, deaths = 0, old_deaths = 0; // bullets refers to the number of bullets
 
 
 	// constructer
@@ -82,15 +93,16 @@ struct tank
 		x = inputx;
 		y = inputy;
 	}
-/*
-	   Description: redraws the square at the specified posititon,
-	   				taken entirely from major assignment 1
 
-	   Arguments: colour: what colour we want the square
-	   			  x: x position of where we will be drawing
-	   			  y: y position of where we will bed drawing
-	   Returns: nothing
-*/
+	/*
+		   Description: redraws the square at the specified posititon,
+		   				taken entirely from major assignment 1
+
+		   Arguments: colour: what colour we want the square
+		   			  x: x position of where we will be drawing
+		   			  y: y position of where we will bed drawing
+		   Returns: nothing
+	*/
 	void redrawCursor(uint16_t colour, int &x, int &y) {
   		tft.fillRect(x - CURSOR_SIZE/2, y - CURSOR_SIZE/2,
         CURSOR_SIZE, CURSOR_SIZE, colour);
@@ -98,15 +110,14 @@ struct tank
 
 
 
-/*
-	   Description: Updates the position of the arduino tank based
-	   				off of the joystick, much of this was taken from major
-	   				assignment 1
+	/*
+		   Description: Updates the position of the arduino tank based
+		   				off of the joystick, much of this was taken from major
+		   				assignment 1
 
-	   Arguments: none
-	   Returns: none
-*/
-
+		   Arguments: none
+		   Returns: none
+	*/
 	void ardiUpdate(){
 
 
@@ -143,7 +154,7 @@ struct tank
 			moving = true;
 		}
 
-	// remember the x-reading increases as we push left
+		// remember the x-reading increases as we push left
 
 
 		if (xVal > JOY_CENTER + JOY_DEADZONE) {
@@ -164,14 +175,14 @@ struct tank
 		if (moving){
 			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
-/*
+			/*
 			lcd_image_draw(&backImage, &tft,
 					 oldX - CURSOR_SIZE/2,
 				 	 oldY - CURSOR_SIZE/2,
 				   oldX - CURSOR_SIZE/2, 
 				   oldY - CURSOR_SIZE/2,
 					 CURSOR_SIZE, CURSOR_SIZE);
-*/
+			*/
 			redrawCursor(TFT_RED, x, y);
 		}
 
@@ -182,48 +193,59 @@ struct tank
 
 
 
-/*
+	/*
 	   Description: Updates information for the desktop square according to keyboard input from
 	   				the desktop
 	   Arguments: direciton: determines which way the square will move, will be w, a, s, or d
 	   Returns: none
-*/
-		void desktopUpdate(char direction){
-			int oldY = y;
-			int oldX = x;
-			if (direction == 'w'){
-				y -= 5;
-			}
-			if (direction == 's'){
-				y += 5;
-			}
-			
-			if (direction == 'd'){
-				x += 5;
-			
-			}
-			if (direction == 'a'){
-				x -= 5;
-			}
-
-			redrawCursor(TFT_BLACK, oldX, oldY); 
-
-			/*
-			lcd_image_draw(&backImage, &tft,
-								 oldX - CURSOR_SIZE/2,
-							 	 oldY - CURSOR_SIZE/2,
-							   oldX - CURSOR_SIZE/2, 
-							   oldY - CURSOR_SIZE/2,
-								 CURSOR_SIZE, CURSOR_SIZE);
-			tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
-			CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK); */
-
-			redrawCursor(TFT_RED, x, y); 
-
-
+	*/
+	void desktopUpdate(char direction){
+		int oldY = y;
+		int oldX = x;
+		if (direction == 'w'){
+			y -= 5;
+		}
+		if (direction == 's'){
+			y += 5;
+		}
+		
+		if (direction == 'd'){
+			x += 5;
+		
+		}
+		if (direction == 'a'){
+			x -= 5;
 		}
 
+		redrawCursor(TFT_BLACK, oldX, oldY); 
+
+		/*
+		lcd_image_draw(&backImage, &tft,
+							 oldX - CURSOR_SIZE/2,
+						 	 oldY - CURSOR_SIZE/2,
+						   oldX - CURSOR_SIZE/2, 
+						   oldY - CURSOR_SIZE/2,
+							 CURSOR_SIZE, CURSOR_SIZE);
+		tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
+		CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK); */
+
+		redrawCursor(TFT_RED, x, y); 
+
+
+	}
+
+
 };
+
+
+
+
+
+
+
+
+
+
 
 
 // keeps track of most of the information related to the bullets
@@ -231,8 +253,9 @@ struct bullet
 {
 
 	bool active = 0; // 0 means the bullet is not supposed to be on the screen
-	int x, y, velX = 3, velY = 3;
+	int x, y, velX = 3, velY = 3, startTime = 0;
 	int bounce = 0; // if a bullet bounces twice, we get rid of it
+	bool gracePeriod = true;
 
 	// constructor
 	bullet(int inputx = 0, int inputy = 0){
@@ -242,12 +265,31 @@ struct bullet
 
 	void checkCollision(struct tank tankYou) {
 
-		if ((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) {
+		/*
+		tft.fillRect(80, 100, CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
 
-			tft.setCursor(260, 160);
+		tft.setCursor(80, 100);
+		tft.setTextColor(TFT_BLUE);
+		tft.setTextSize(2);
+		tft.print(gracePeriod);
+		*/
+
+
+		if (((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) && !(gracePeriod)) {
+
+			//tft.setCursor(260, 160);
+			//tft.setTextColor(TFT_BLUE);
+			//tft.setTextSize(2);
+			//tft.print("TANK HIT!");
+			tft.fillRect(tankYou.x - CURSOR_SIZE, tankYou.y - CURSOR_SIZE, 2*CURSOR_SIZE, 2*CURSOR_SIZE, TFT_BLUE);
+
+			tankYou.deaths++;
+
+			tft.setCursor(60, 260);
 			tft.setTextColor(TFT_BLUE);
 			tft.setTextSize(2);
-			tft.print("TANK HIT!");
+
+			tft.print(tankYou.deaths);
 
 		}
 	}
@@ -259,13 +301,18 @@ struct bullet
 	   			  if we end up destroying the bullet
 
 	   Returns:
-*/
+	*/
 
 	int updateBullet(int &numBullets){
 		//Serial.println(bounce);
 
 		if (!active){ // bullet isn't actually active, so don't do anything
 			return 1;
+		}
+
+
+		if ((millis() > startTime + 1000) && (gracePeriod)) {
+			gracePeriod = false;
 		}
 
 
@@ -277,14 +324,14 @@ struct bullet
 			return 0;
 		}
 
-/*				lcd_image_draw(&backImage, &tft,
+		/*				lcd_image_draw(&backImage, &tft,
 							 x - CURSOR_SIZE/2,
 						 	 y - CURSOR_SIZE/2,
 						   x - CURSOR_SIZE/2, 
 						   y - CURSOR_SIZE/2,
 							 CURSOR_SIZE, CURSOR_SIZE);*/
 
-	// draws over the old position of the bullet
+		// draws over the old position of the bullet
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK); 
 
 
@@ -332,6 +379,9 @@ struct bullet
 		float vecX = tapX - x;
 		float vecY = -1*(tapY - y);
 
+		// for grace period
+		startTime = millis();
+
 
 		tft.fillRect(260, 160, 80, 80, TFT_BLACK);
 
@@ -372,6 +422,43 @@ struct bullet
 
 
 
+
+
+
+/*
+
+	Displays current scores to top of arduino screen
+
+*/
+void displayScores(struct tank ard_tank, struct tank desk_tank) {
+
+	tft.setTextColor(TFT_BLACK);
+	tft.setTextSize(3);
+
+	if (ard_tank.deaths != ard_tank.old_deaths) {
+
+		tft.fillRect(210, 0, 30, 25, TFT_RED);
+
+		//arduino score
+		tft.setCursor(212, 3);
+		tft.print(ard_tank.deaths);
+
+	}
+
+	if (desk_tank.deaths != desk_tank.old_deaths) {
+
+		tft.fillRect(240, 0, 30, 25, TFT_RED);
+
+		//desktop score
+		tft.setCursor(248, 3);
+		tft.print(desk_tank.deaths);
+	}
+}
+
+
+
+
+
 void setup(){
 	init();
 
@@ -398,6 +485,27 @@ void setup(){
 	tft.setRotation(1);
 	tft.fillScreen(TFT_BLACK);
 	tft.drawLine(DISPLAY_WIDTH/2, 0, DISPLAY_WIDTH/2, DISPLAY_HEIGHT, TFT_BLUE);
+
+	tft.fillRect(50 - CURSOR_SIZE/2, 150 - CURSOR_SIZE/2,
+        CURSOR_SIZE, CURSOR_SIZE, TFT_RED);
+	tft.fillRect(300 - CURSOR_SIZE/2, 150 - CURSOR_SIZE/2,
+        CURSOR_SIZE, CURSOR_SIZE, TFT_RED);
+
+
+	tft.setTextColor(TFT_BLACK);
+	tft.setTextSize(3);
+
+	tft.fillRect(210, 0, 60, 25, TFT_RED);
+
+	//arduino score
+	tft.setCursor(212, 3);
+	tft.print(0);
+
+	//desktop score
+	tft.setCursor(248, 3);
+	tft.print(0);
+	
+
 	//lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 }
 
@@ -431,9 +539,14 @@ bool check_boundries(int &x, int &y){
 }
 
 
+
+
+
 // NEEDS TO BE CHANGED TO ACCOMIDATE THE DESKTOP
 void process_shot(int touchX, int touchY, tank &Atank, bullet bulls[], int &cooldown){
 	if (Atank.bullets >= 2 ||  millis() - cooldown < 1000){return;}
+	
+
 	bullet bull = bulls[Atank.bullets];
 
 	bull.x = Atank.x;
@@ -441,20 +554,26 @@ void process_shot(int touchX, int touchY, tank &Atank, bullet bulls[], int &cool
 
 	bull.fire(touchX, touchY);
 
+
 	bulls[Atank.bullets] = bull;
 
 	Atank.bullets += 1;
 	cooldown = millis();
 
-
 }
 
-	/*
-	   Description: Reads for keyboard input from the desktop and updates the desktop square accordingly
 
-	   Arguments: deskTank: the desktop square
 
-	   Returns: nothing
+
+
+
+
+/*
+   Description: Reads for keyboard input from the desktop and updates the desktop square accordingly
+
+   Arguments: deskTank: the desktop square
+
+   Returns: nothing
 */
 
 
@@ -608,7 +727,7 @@ int main(){
  	};
  	bullet deskBull[5] = 
  	{
-  		bullet(20, 20),
+  	bullet(20, 20),
  		bullet(20, 20),
  		bullet(20, 20),
  		bullet(20, 20),
@@ -627,9 +746,10 @@ int main(){
 			}	
 		}
 
-			TSPoint touch = ts.getPoint();
-			pinMode(YP, OUTPUT);
-			pinMode(XM, OUTPUT);
+		TSPoint touch = ts.getPoint();
+		pinMode(YP, OUTPUT);
+		pinMode(XM, OUTPUT);
+		
 		if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE )){
 			int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
 			int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
@@ -637,6 +757,7 @@ int main(){
 			if (touchX > DISPLAY_WIDTH/2){
 				process_shot(touchX, touchY, thisTank, ardiBull, ardiCooldown);
 			}
+
 			else if (touchX < DISPLAY_WIDTH/2){
 				process_shot(touchX, touchY, deskTank, deskBull, deskCooldown);
 			}
@@ -648,8 +769,19 @@ int main(){
 
 
 		for (int i = 0; i < 5; i++){//update all the bullets
+
 			ardiBull[i].updateBullet(thisTank.bullets);
 			deskBull[i].updateBullet(thisTank.bullets);
+
+			displayScores(thisTank, deskTank);
+
+			//arduino tank
+			ardiBull[i].checkCollision(thisTank);
+			deskBull[i].checkCollision(thisTank);
+
+			//desktop tank
+			ardiBull[i].checkCollision(deskTank);
+			deskBull[i].checkCollision(deskTank);
 		}
 	}
 }
