@@ -132,10 +132,6 @@ void setup_rectangle(rectangle rect, unordered_set<point> &archive){
     Serial.writeline(to_string(rect.xo) + ", " + to_string(rect.yo)
                     + ", " + to_string(rect.width) + ", " + to_string(rect.length) + "\n");
     
-
-
-
-
     // now we need to put the points on the bountry of the rectangle into a set so we can
     // tell the arduino if a bullet has hit the rectangle
 
@@ -217,22 +213,49 @@ int main(){
 
 
     unordered_set<point> archive; //set to store any invalid points
-    rectangle test1(200, 100, 20, 80);
-
+/*    rectangle test1(300, 100, 20, 80);
+    rectangle test2(400, 100, 20, 80);
+    rectangle test3(300, 100, 20, 80);
+    rectangle test4(400, 100, 20, 80);
+    rectangle test5(300, 100, 20, 80);
+    rectangle test6(400, 100, 20, 80);
     setup_rectangle(test1, archive);
+    setup_rectangle(test2, archive);
+    setup_rectangle(test3, archive);
+    setup_rectangle(test4, archive);
+    setup_rectangle(test5, archive);
+    setup_rectangle(test6, archive);*/
+
+    for (int i = 0; i <= 300; i+=10){
+    	rectangle rect(300 + i, 100, 20, 80);
+    	setup_rectangle(rect, archive);
+    	while(1){
+    		string cont = Serial.readline();
+    		cout << "waiting" << endl;
+    		if (cont[0] == 'D'){
+    			cout << "done" << endl;
+    			break;
+    		}
+    	}
+    	cout << i << endl;
+    }
+
+    
+
+    
 
     Serial.writeline("F");
     cout << "F" << endl;
+
     // BEGINNING OF CODE NOT MADE BY US
     struct termios oldSettings, newSettings;
     tcgetattr( fileno( stdin ), &oldSettings );
     newSettings = oldSettings;
     newSettings.c_lflag &= (~ICANON & ~ECHO);
-    tcsetattr( fileno( stdin ), TCSANOW, &newSettings );    
+    tcsetattr( fileno( stdin ), TCSANOW, &newSettings );  
 
     while ( 1 )
     {
-
         fd_set set;
         struct timeval tv;
 
@@ -245,7 +268,7 @@ int main(){
 
         
         string flag = Serial.readline();
-        if (flag[0] == 'P'){
+        if (flag[0] == 'P'){ // arduino has sent us a point to check
             check_point(flag, archive);
         }
         if( res > 0 )
