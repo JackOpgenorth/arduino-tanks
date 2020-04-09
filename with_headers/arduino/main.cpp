@@ -64,36 +64,6 @@ void testing(char message[]){
 }
 
 
-// hold almost all information about the "tanks"
-
-
-void displayScores(struct tank ard_tank, struct tank desk_tank) {
-
-	tft.setTextColor(TFT_BLACK);
-	tft.setTextSize(3);
-
-	if (ard_tank.deaths != ard_tank.old_deaths) {
-
-		tft.fillRect(210, 0, 30, 25, TFT_RED);
-
-		//arduino score
-		tft.setCursor(212, 3);
-		tft.print(ard_tank.deaths);
-
-	}
-
-	if (desk_tank.deaths != desk_tank.old_deaths) {
-
-		tft.fillRect(240, 0, 30, 25, TFT_RED);
-
-		//desktop score
-		tft.setCursor(248, 3);
-		tft.print(desk_tank.deaths);
-	}
-}
-
-
-
 void setup(){
 	init();
 
@@ -141,6 +111,41 @@ void setup(){
 	tft.print(0);
 	//lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 }
+// hold almost all information about the "tanks"
+
+
+
+
+
+
+void displayScores(struct tank ard_tank, struct tank desk_tank) {
+
+	tft.setTextColor(TFT_BLACK);
+	tft.setTextSize(3);
+
+	if (ard_tank.deaths != ard_tank.old_deaths) {
+
+		tft.fillRect(210, 0, 30, 25, TFT_RED);
+
+		//arduino score
+		tft.setCursor(212, 3);
+		tft.print(ard_tank.deaths);
+
+	}
+
+	if (desk_tank.deaths != desk_tank.old_deaths) {
+
+		tft.fillRect(240, 0, 30, 25, TFT_RED);
+
+		//desktop score
+		tft.setCursor(248, 3);
+		tft.print(desk_tank.deaths);
+	}
+}
+
+
+
+
 
 	/*
 	   Description: very simple function to check if a square hit the boundry of the screen
@@ -239,8 +244,6 @@ void readRect(){
 	String yStr = rectStr.substring(1, rectStr.indexOf(','));
 	rectStr = rectStr.substring(rectStr.indexOf(" ", 1));
 	String wStr = rectStr.substring(1, rectStr.indexOf(','));
-	Serial.println(rectStr);
-	Serial.println(wStr);
 	rectStr = rectStr.substring(rectStr.indexOf(" ", 1));
 
 	String lStr = rectStr.substring(1, rectStr.indexOf(','));
@@ -248,6 +251,9 @@ void readRect(){
 
 	// draw rectangle
 	tft.fillRect(xStr.toInt(), yStr.toInt(), wStr.toInt(), lStr.toInt(), TFT_BLUE );
+
+	Serial.println("D");
+
 
 }
 
@@ -263,15 +269,21 @@ void readRect(){
 void wait_for_rectangles(){
 	bool waiting = 1;
 	char incoming;
+	//Serial.println(Serial.available());
+
+	unsigned long timeout= millis();
 	while (waiting){ // keep waiting until we get a signal from the desktop
 		if (Serial.available()){
 
 			incoming = Serial.read();
-			Serial.println(incoming);
+			//Serial.println(incoming);
+
 			if (incoming == 'R'){// desktop says its sending a rectangle
+				
 				readRect();
 			}
-			if (incoming == 'F'){// desktop says its done sending reactangles
+
+			if (incoming == 'F' || millis() - timeout > 2000){// desktop says its done sending reactangles
 				break;
 			}
 
@@ -330,7 +342,7 @@ int main(){
 	Serial.println("Y\n");
 
 	wait_for_rectangles();// read in and draw all the rectangles
-
+	
 	// get squares ready
 	tank thisTank(50,150);
 	tank deskTank(300, 150);
@@ -358,7 +370,8 @@ int main(){
 
  	// main loop
 	while(1){
-		thisTank.ardiUpdate();
+
+		thisTank.ardiUpdate(); // moves the arduino's square according to jo
 
 		if (Serial.available()){// check if desktop is sending somthing
 			char incoming = Serial.read();
