@@ -177,7 +177,6 @@ bool check_boundries(int &x, int &y){
 }
 
 
-// NEEDS TO BE CHANGED TO ACCOMIDATE THE DESKTOP
 void process_shot(int touchX, int touchY, tank &Atank, bullet bulls[], int &cooldown){
 	if (Atank.bullets >= 2 ||  millis() - cooldown < 1000){return;}
 	bullet bull = bulls[Atank.bullets];
