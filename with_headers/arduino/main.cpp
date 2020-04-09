@@ -360,7 +360,7 @@ int main(){
  	};
  	bullet deskBull[5] = 
  	{
-  		bullet(20, 20),
+  	bullet(20, 20),
  		bullet(20, 20),
  		bullet(20, 20),
  		bullet(20, 20),

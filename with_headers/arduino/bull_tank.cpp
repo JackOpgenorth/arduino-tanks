@@ -210,7 +210,7 @@ bullet::bullet(int inputx, int inputy){
 	velY = 3;
 	bounce = 0;
 	startTime = 0;
-	gracePeriod = 1;
+	gracePeriod = true;
 }
 
 
@@ -224,7 +224,7 @@ void bullet::checkCollision(struct tank tankYou) {
 		tft.setTextSize(2);
 		tft.print(gracePeriod);
 		*/
-	if ((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) {
+		if (((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) && !(gracePeriod)) {
 
 			tft.fillRect(tankYou.x - CURSOR_SIZE, tankYou.y - CURSOR_SIZE, 2*CURSOR_SIZE, 2*CURSOR_SIZE, TFT_BLUE);
 
@@ -254,7 +254,7 @@ int bullet::updateBullet(int &numBullets){
 		return 1;
 	}
 
-	if ((millis() > startTime + 1000) && (gracePeriod)) {
+	if ((millis() > startTime + 2000) && (gracePeriod)) {
 		gracePeriod = false;
 	}
 
@@ -324,6 +324,9 @@ void bullet::fire(int tapX, int tapY){
 
 
 	tft.fillRect(260, 160, 80, 80, TFT_BLACK);
+
+	// for grace period
+	startTime = millis();
 
 
 	tft.setCursor(260, 160);
