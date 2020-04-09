@@ -358,6 +358,7 @@ int main(){
  		bullet(20, 20)
 
  	};
+
  	bullet deskBull[5] = 
  	{
   	bullet(20, 20),
@@ -380,9 +381,10 @@ int main(){
 			}	
 		}
 
-			TSPoint touch = ts.getPoint();
-			pinMode(YP, OUTPUT);
-			pinMode(XM, OUTPUT);
+		TSPoint touch = ts.getPoint();
+		pinMode(YP, OUTPUT);
+		pinMode(XM, OUTPUT);
+
 		if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE )){
 			int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
 			int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
