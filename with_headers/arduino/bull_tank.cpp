@@ -61,13 +61,29 @@ tank::tank(int inputx, int inputy){
 	bullets = 0;
 }
 
+/*
+	   Description: redraws the square at the specified posititon,
+	   				taken entirely from major assignment 1
 
+	   Arguments: colour: what colour we want the square
+	   			  x: x position of where we will be drawing
+	   			  y: y position of where we will bed drawing
+	   Returns: nothing
+*/
 void tank::redrawCursor(uint16_t colour, int &x, int &y) {
 		tft.fillRect(x - CURSOR_SIZE/2, y - CURSOR_SIZE/2,
     CURSOR_SIZE, CURSOR_SIZE, colour);
 }
 
 
+/*
+	   Description: Updates the position of the arduino tank based
+	   				off of the joystick, much of this was taken from major
+	   				assignment 1
+
+	   Arguments: none
+	   Returns: none
+*/
 
 void tank::ardiUpdate(){
 
@@ -143,7 +159,12 @@ void tank::ardiUpdate(){
 
 
 
-
+/*
+	   Description: Updates information for the desktop square according to keyboard input from
+	   				the desktop
+	   Arguments: direciton: determines which way the square will move, will be w, a, s, or d
+	   Returns: none
+*/
 void tank::desktopUpdate(char direction){
 	int oldY = y;
 	int oldX = x;
@@ -218,7 +239,13 @@ void bullet::checkCollision(struct tank tankYou) {
 	}
 }
 
+	/*
+	   Description: Updates information about the bullet
+	   Arguments: &numbullett: the number of bullets of a tank, may be subtracted from
+	   			  if we end up destroying the bullet
 
+	   Returns:
+*/
 
 int bullet::updateBullet(int &numBullets){
 	//Serial.println(bounce);
