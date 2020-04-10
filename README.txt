@@ -23,9 +23,9 @@ Desktop Makefile Targets:
 	- make serialport.o: Compiles the object file for serialport.cpp
 	- make clean: Removes object files and executables
 	
-Client is just the unmodified arduino makefile that was used in class
+Client makefile is just the unmodified arduino makefile that was used in class
 
-Wiring Instructions
+Wiring Instructions:
 	Joystick:
 		VRx <--> A8
 		VRy <--> A9
@@ -37,9 +37,10 @@ Wiring Instructions
 Running Instructions:
 	1. Have one terminal open in the desktop directory and one open in the arduino directory
 	2. Compile the desktop executable by typing "make" into the desktop terminal
-	3. Compile and upload the arduino program by typing "make upload" in the arduino terminal (Make sure this is done BEFORE the desktop executable is run)
+	3. Compile and upload the arduino program by typing "make upload" in the arduino terminal (Make sure this is done BEFORE the 		   desktop executable is run)
 	4. Run the desktop executable by typing "./desktop" in the desktop terminal
-	5. Begin inputting by moving the joystick and tapping the screen. To make a tank shoot, tap the opposite side of the screen from where it started
+	5. Begin inputting by moving the joystick and tapping the screen. To make a tank shoot, tap the opposite side of the screen from 	    where it started
+	6. To stop running the program, use ctrl-c to kill the desktop program like you usually would. It takes a few seconds but it 		   will stop. 
 
 Notes and Assumptions:
 	Due to the pandemic, we were unable to meet up and could not implement
