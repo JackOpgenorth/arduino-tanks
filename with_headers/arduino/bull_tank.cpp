@@ -111,7 +111,7 @@ void tank::ardiUpdate(){
 
 
 	if (yVal < JOY_CENTER - JOY_DEADZONE) {
-		y -= (1 + velY - 9); // decrease the y coordinate of the cursor
+		y -= (1 + velY - 8); // decrease the y coordinate of the cursor
 		moving = true;
 	}
 
@@ -131,7 +131,7 @@ void tank::ardiUpdate(){
 
 	//  moving right
 	else if (xVal < JOY_CENTER - JOY_DEADZONE) {
-		x += 1 + velX - 9;
+		x += 1 + velX - 8;
 		moving = true;
 	}
 
@@ -248,7 +248,6 @@ void bullet::checkCollision(struct tank tankYou) {
 */
 
 int bullet::updateBullet(int &numBullets){
-	//Serial.println(bounce);
 
 	if (!active){ // bullet isn't actually active, so don't do anything
 		return 1;
@@ -266,12 +265,6 @@ int bullet::updateBullet(int &numBullets){
 		return 0;
 	}
 
-/*				lcd_image_draw(&backImage, &tft,
-						 x - CURSOR_SIZE/2,
-					 	 y - CURSOR_SIZE/2,
-					   x - CURSOR_SIZE/2, 
-					   y - CURSOR_SIZE/2,
-						 CURSOR_SIZE, CURSOR_SIZE);*/
 
 // draws over the old position of the bullet
 	tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK); 
@@ -299,14 +292,39 @@ int bullet::updateBullet(int &numBullets){
 		bounce++;
 	}
 
+	// hit bottom  of scoreboard
+	if (y < 28 && y > 24 && x > 205 && x < 265){
+		y = 24;
+		velY *= -1;
+		bounce++;
+	}
+	// hit left  of scoreboard
+	if (y < 25 && x > 210 && x < 215){
+		x = 209;
+		velX *= -1;
+		bounce++;
+	}
+	// hit right  of scoreboard
+	if (y < 25 && x > 260 && x < 275){
+		x = 275;
+		velX *= -1;
+		bounce++;
+	}
+
 
 		
 	// communicate with the desktop to see if we have hitn a rectangle
 	char flag = check_xy(x, y);
 
 
-	if (flag == 'S'){velX *= -1;}// we hit the left or right side
-	if (flag == 'T'){velY *= -1;}// we hit the top or bottom
+	if (flag == 'S'){
+		velX *= -1;
+		bounce++;
+	}// we hit the left or right side
+	if (flag == 'T'){	
+		velY *= -1;
+		bounce++;
+	}// we hit the top or bottom
 
 
 	// finally, update the position of the bullet and draw it

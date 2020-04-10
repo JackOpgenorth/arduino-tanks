@@ -148,7 +148,8 @@ void displayScores(struct tank ard_tank, struct tank desk_tank) {
 
 
 	/*
-	   Description: very simple function to check if a square hit the boundry of the screen
+	   Description: very simple function to check if a square (not a bullet!)
+	   				hit the boundry of the screen
 	   Arguments: x: x position we want to check
 	   			  y: y position we want to check
 
@@ -404,7 +405,7 @@ int main(){
 
 		for (int i = 0; i < 5; i++){//update all the bullets
 			ardiBull[i].updateBullet(thisTank.bullets);
-			deskBull[i].updateBullet(thisTank.bullets);
+			deskBull[i].updateBullet(deskTank.bullets);
 			displayScores(thisTank, deskTank);
 
 			//arduino tank

@@ -10,7 +10,7 @@
 #include <termios.h>
 #include <unordered_set>
 
-SerialPort Serial("/dev/ttyACM0");
+SerialPort Serial("/dev/ttyACM1");
 
 
 /*
@@ -19,7 +19,7 @@ SerialPort Serial("/dev/ttyACM0");
 
        Returns: none
 */
-void sendMovement(){
+int sendMovement(){
     char c;
     read( fileno( stdin ), &c, 1 ); //THIS LINE WAS ALSO NOT MADE BY US
     cout << c << endl;
@@ -28,6 +28,9 @@ void sendMovement(){
     else if (c == 'a'){Serial.writeline("a");}
     else if (c == 's'){Serial.writeline("s");}
     else if (c == 'd'){Serial.writeline("d");}
+
+    else if (c == 'k'){return 1;}
+    return 0;
 }
 
 
@@ -169,6 +172,15 @@ void setup_rectangle(rectangle rect, unordered_set<point> &archive){
 
 
     }
+
+    while(1){
+        string cont = Serial.readline();
+        cout << "waiting" << endl;
+        if (cont[0] == 'D'){
+            cout << "done" << endl;
+            break;
+        }
+    }
      
 }
 /*
@@ -212,33 +224,17 @@ int main(){
     }
 
 
-    unordered_set<point> archive; //set to store any invalid points
-/*    rectangle test1(300, 100, 20, 80);
-    rectangle test2(400, 100, 20, 80);
-    rectangle test3(300, 100, 20, 80);
-    rectangle test4(400, 100, 20, 80);
-    rectangle test5(300, 100, 20, 80);
-    rectangle test6(400, 100, 20, 80);
-    setup_rectangle(test1, archive);
-    setup_rectangle(test2, archive);
-    setup_rectangle(test3, archive);
-    setup_rectangle(test4, archive);
-    setup_rectangle(test5, archive);
-    setup_rectangle(test6, archive);*/
+    unordered_set<point> archive; // will to store any invalid points
 
-    for (int i = 0; i <= 300; i+=10){
-    	rectangle rect(300 + i, 100, 20, 80);
-    	setup_rectangle(rect, archive);
-    	while(1){
-    		string cont = Serial.readline();
-    		cout << "waiting" << endl;
-    		if (cont[0] == 'D'){
-    			cout << "done" << endl;
-    			break;
-    		}
-    	}
-    	cout << i << endl;
-    }
+    rectangle rect1(120, 20, 20, 80);
+    rectangle rect2(360, 20, 20, 80);
+    rectangle rect3(120, 200, 20, 80);
+    rectangle rect4(360, 200, 20, 80);
+
+    setup_rectangle(rect1, archive);
+    setup_rectangle(rect2, archive);
+    setup_rectangle(rect3, archive);
+    setup_rectangle(rect4, archive);
 
     
 
@@ -274,7 +270,8 @@ int main(){
         if( res > 0 )
         {
         
-            sendMovement();
+            bool exit = sendMovement();
+            if (exit){return 0;}
             
         }
     }
