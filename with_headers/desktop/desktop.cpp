@@ -18,7 +18,7 @@ This file contains all code that is being run on the desktop.
 #include <termios.h>
 #include <unordered_set>
 
-SerialPort Serial("/dev/ttyACM0");
+SerialPort Serial("/dev/ttyACM1");
 
 
 

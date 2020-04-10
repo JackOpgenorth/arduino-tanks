@@ -1,6 +1,6 @@
 
 /* 
-This file contains implementations for all teh methods defined in bull_tank.h
+This file contains implementations for all the methods defined in bull_tank.h
 */
 
 
@@ -165,27 +165,18 @@ void tank::ardiUpdate(){
 
 
 	check_boundries(x, y); // make sure we have not hit the top or bottom
-	constrain(x, 0, 240);	// keep x on left side of screen
+	if ((0 > x) || (240 < x + 5)) {x = oldX; }	// keep x on left side of screen
 
 	
 	if (moving){
 		// redrawing patch at old position.
 		tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 		CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
-/*
-		lcd_image_draw(&backImage, &tft,
-				 oldX - CURSOR_SIZE/2,
-			 	 oldY - CURSOR_SIZE/2,
-			   oldX - CURSOR_SIZE/2, 
-			   oldY - CURSOR_SIZE/2,
-				 CURSOR_SIZE, CURSOR_SIZE);
-*/
 
 		redrawCursor(TFT_RED, x, y);
 	}
 
-		delay(20);
-
+	delay(20);
 }
 
 
@@ -199,6 +190,7 @@ void tank::ardiUpdate(){
 void tank::desktopUpdate(char direction){
 	int oldY = y;
 	int oldX = x;
+
 	if (direction == 'w'){
 		y -= 5;
 	}
@@ -227,26 +219,13 @@ void tank::desktopUpdate(char direction){
 
 
 
-	constrain(x, 240, 480);
+	if (245 > x) {x = oldX; }
 	constrain(y, 0, 320);
 
-
 	redrawCursor(TFT_BLACK, oldX, oldY); 
-
-	/*
-	lcd_image_draw(&backImage, &tft,
-						 oldX - CURSOR_SIZE/2,
-					 	 oldY - CURSOR_SIZE/2,
-					   oldX - CURSOR_SIZE/2, 
-					   oldY - CURSOR_SIZE/2,
-						 CURSOR_SIZE, CURSOR_SIZE);
-	tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
-	CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK); */
-
 	redrawCursor(TFT_RED, x, y); 
-
-
 }
+
 
 /*
 	Description: constructor for the bullet struct
@@ -298,12 +277,13 @@ void bullet::checkCollision(struct tank &tankYou, int &numBulls) {
 	}
 }
 
-	/*
-	   Description: Updates information about the bullet
-	   Arguments: &numbullet: the number of bullets of a tank, may be subtracted from
-	   			  if we end up destroying the bullet
 
-	   Returns: nothing
+/*
+   Description: Updates information about the bullet
+   Arguments: &numbullet: the number of bullets of a tank, may be subtracted from
+   			  if we end up destroying the bullet
+
+   Returns: nothing
 */
 
 int bullet::updateBullet(int &numBullets){
@@ -408,23 +388,8 @@ void bullet::fire(int tapX, int tapY){
 	// for grace period
 	startTime = millis();
 
-	tft.fillRect(260, 160, CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
-	tft.setCursor(260, 160);
-	tft.setTextColor(TFT_BLUE);
-	tft.setTextSize(2);
-	tft.print(startTime);
-	//tft.setCursor(260, 200);
-	//tft.print(vecY);
-
-
-
+	// angle
 	float radAng = atan(vecY/vecX);
-
-
-	//tft.setCursor(260, 240);
-	//tft.print(radAng);
-
-
 
 	if (   (vecY > 0 && vecX < 0) ){
 		radAng += 3.14;
@@ -436,7 +401,7 @@ void bullet::fire(int tapX, int tapY){
 
 	active = 1;
 
-
+	// set velocities based on angle
 	velX = 5*cos(radAng);
 	velY = -5*sin(radAng);
 }

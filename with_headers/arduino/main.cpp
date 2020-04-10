@@ -110,27 +110,30 @@ void setup(){
 
 	tft.fillRect(210, 0, 60, 25, TFT_RED);
 
-	//arduino score
+	//arduino score box
 	tft.setCursor(212, 3);
 	tft.print(0);
 
-	//desktop score
+	//desktop score box
 	tft.setCursor(248, 3);
 	tft.print(0);
-	//lcd_image_draw(&backImage, &tft, 0,0,0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 }
-// hold almost all information about the "tanks"
 
 
+/*
+	Description: If a tank has been hit since the last time the function was called, it redraws
+				the score box at the top of the screen with the new values
+	Arguments: both of the tank stuctures, by reference
+	Outputs: none
 
-
-
-
+*/
 void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 
+	// change text options
 	tft.setTextColor(TFT_BLACK);
 	tft.setTextSize(3);
 
+	// only change desktop tank score if it has changed
 	if (ard_tank.deaths != ard_tank.old_deaths) {
 
 		tft.fillRect(240, 0, 30, 25, TFT_RED);
@@ -139,10 +142,11 @@ void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 		tft.setCursor(248, 3);
 		tft.print(ard_tank.deaths);
 
+		// reset old death value
 		ard_tank.old_deaths = ard_tank.deaths;
-
 	}
 
+	// only change arduino tank score if has changed
 	if (desk_tank.deaths != desk_tank.old_deaths) {
 
 		tft.fillRect(210, 0, 30, 25, TFT_RED);
@@ -151,6 +155,7 @@ void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 		tft.setCursor(212, 3);
 		tft.print(desk_tank.deaths);
 
+		// reset old death value
 		desk_tank.old_deaths = desk_tank.deaths;
 	}
 }
@@ -159,16 +164,15 @@ void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 
 
 
-	/*
-	   Description: very simple function to check if a square (not a bullet!)
-	   				hit the boundry of the screen
-	   Arguments: x: x position we want to check
-	   			  y: y position we want to check
+/*
+   Description: very simple function to check if a square (not a bullet!)
+   				hit the boundry of the screen
+   Arguments: x: x position we want to check
+   			  y: y position we want to check
 
 
-	   Returns: 0 if we hit a boundry, 1 otherwise
+   Returns: 0 if we hit a boundry, 1 otherwise
 */
-
 bool check_boundries(int &x, int &y){
 	if (x > DISPLAY_WIDTH - 4){
 		x = DISPLAY_WIDTH - 4;
@@ -190,7 +194,14 @@ bool check_boundries(int &x, int &y){
 }
 
 
-
+/*
+	Description: call when screen has been tapped, computes everything necissary to set up
+				and fire a bullet
+	Arguments: touchX: x-coordinate of screen tap; touchY: y-coordinate of tap; the tank 
+				object (the tank firing the bullet); reference to the bullet array of the current
+				tank; cooldown: reference to current cooldown of the tank
+	Returns: nothing
+*/
 void process_shot(int touchX, int touchY, tank &Atank, bullet *bulls, int &cooldown){
 	if (Atank.bullets >= 2 ||  millis() - cooldown < 1000){return;}
 	bullet bull = bulls[Atank.bullets];
@@ -209,15 +220,14 @@ void process_shot(int touchX, int touchY, tank &Atank, bullet *bulls, int &coold
 
 }
 
-	/*
-	   Description: Reads for keyboard input from the desktop and updates the desktop square accordingly
 
-	   Arguments: deskTank: the desktop square
+/*
+   Description: Reads for keyboard input from the desktop and updates the desktop square accordingly
 
-	   Returns: nothing
+   Arguments: deskTank: the desktop square
+
+   Returns: nothing
 */
-
-
 void readDesktop(tank& deskTank){
 	if (Serial.available()){
 		//testing("MESSAGE");
@@ -227,14 +237,14 @@ void readDesktop(tank& deskTank){
 }
 
 
-	/*
-	   Description: Reads information about a rectangle from the desktop and then draws said rectangle
-	   Arguments: nothing
+
+/*
+   Description: Reads information about a rectangle from the desktop and then draws said rectangle
+   Arguments: nothing
 
 
-	   Returns:nothing
+   Returns:nothing
 */
-
 void readRect(){
 	char rectInfo[50]; // to hold message from desktop
 	int i = 0;
@@ -272,12 +282,12 @@ void readRect(){
 }
 
 
-	/*
-	   Description: waits for the desktop to signal it is about to send a rectangle;
-	   Arguments: none
+/*
+   Description: waits for the desktop to signal it is about to send a rectangle;
+   Arguments: none
 
 
-	   Returns: none
+   Returns: none
 */
 
 void wait_for_rectangles(){
@@ -308,15 +318,16 @@ void wait_for_rectangles(){
 }
 
 
-	/*
-	   Description: sends info about a point to the desktop, which then tells the arduino 
-	   				wheather or not this is a "valid" point. (i.e have we just crashed into a 
-	   				rectangle)
-	   Arguments: x: x position we want to check
-	   			  y: y position we want to check
+/*
+ Description: sends info about a point to the desktop, which then tells the arduino 
+ 				wheather or not this is a "valid" point. (i.e have we just crashed into a 
+ 				rectangle)
+ Arguments: x: x position we want to check
+ 			  y: y position we want to check
 
 
-	   Returns: incoming: will tell us wheather the point is valid or not	*/			
+ Returns: incoming: will tell us wheather the point is valid or not	
+*/			
 char check_xy(int x, int y){
 	// sending point to dekstop
 	Serial.print("P ");
@@ -413,13 +424,11 @@ int main(){
 
 		}
 
-		
-
-
 
 		for (int i = 0; i < 5; i++){//update all the bullets
 			ardiBull[i].updateBullet(thisTank.bullets);
 			deskBull[i].updateBullet(deskTank.bullets);
+
 			displayScores(thisTank, deskTank);
 
 			//arduino tank
