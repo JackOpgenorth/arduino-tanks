@@ -1,3 +1,11 @@
+
+/* 
+This file contains implementations for all teh methods defined in bull_tank.h
+*/
+
+
+
+// most constants and files included below were copied from major assignment 2
 #include <Arduino.h>
 #include "bull_tank.h"
 // core graphics library (written by Adafruit)
@@ -50,10 +58,18 @@ MCUFRIEND_kbv tft;
 
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
+// forward declaration of a couple functions that will be implemented in main.cpp
 bool check_boundries(int &x, int &y);
 char check_xy(int x, int y); 
 
+/*
+	   Description: Constructor for the tank struct
 
+	   Arguments: x: initial x position
+	   			  y: initial y position
+	   			  
+	   Returns: nothing
+*/
 tank::tank(int inputx, int inputy){
 	this->x = inputx;
 	this->y = inputy;
@@ -62,13 +78,13 @@ tank::tank(int inputx, int inputy){
 }
 
 /*
-	   Description: redraws the square at the specified posititon,
-	   				taken entirely from major assignment 1
+	Description: redraws the square at the specified posititon,
+	   			 taken entirely from major assignment 1
 
-	   Arguments: colour: what colour we want the square
+	Arguments: colour: what colour we want the square
 	   			  x: x position of where we will be drawing
 	   			  y: y position of where we will bed drawing
-	   Returns: nothing
+	Returns: nothing
 */
 void tank::redrawCursor(uint16_t colour, int &x, int &y) {
 		tft.fillRect(x - CURSOR_SIZE/2, y - CURSOR_SIZE/2,
@@ -151,8 +167,9 @@ void tank::ardiUpdate(){
 	check_boundries(x, y); // make sure we have not hit the top or bottom
 	constrain(x, 0, 240);	// keep x on left side of screen
 
-	// redrawing patch at old position.
+	
 	if (moving){
+		// redrawing patch at old position.
 		tft.fillRect(oldX - CURSOR_SIZE/2, oldY - CURSOR_SIZE/2,
 		CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
 /*
@@ -163,6 +180,7 @@ void tank::ardiUpdate(){
 			   oldY - CURSOR_SIZE/2,
 				 CURSOR_SIZE, CURSOR_SIZE);
 */
+
 		redrawCursor(TFT_RED, x, y);
 	}
 
@@ -175,7 +193,7 @@ void tank::ardiUpdate(){
 /*
 	   Description: Updates information for the desktop square according to keyboard input from
 	   				the desktop
-	   Arguments: direciton: determines which way the square will move, will be w, a, s, or d
+	   Arguments: direction: determines which way the square will move, will be w, a, s, or d
 	   Returns: none
 */
 void tank::desktopUpdate(char direction){
@@ -196,7 +214,7 @@ void tank::desktopUpdate(char direction){
 		x -= 5;
 	}
 
-	// communicate with the desktop to see if we have hitn a rectangle
+	// communicate with the desktop to see if we have hit a rectangle
 	char flag = check_xy(x, y);
 
 
@@ -206,7 +224,6 @@ void tank::desktopUpdate(char direction){
 	if (flag == 'T'){	
 		y = oldY;
 	}// we hit the top or bottom
-
 
 
 
@@ -231,7 +248,11 @@ void tank::desktopUpdate(char direction){
 
 }
 
-
+/*
+	Description: constructor for the bullet struct
+ 	Arguments:  inputx, inputy: will set initial x and y coordinates of bullet
+	Returns: nothing
+*/
 
 bullet::bullet(int inputx, int inputy){
 	this->x = inputx;
@@ -279,10 +300,10 @@ void bullet::checkCollision(struct tank &tankYou, int &numBulls) {
 
 	/*
 	   Description: Updates information about the bullet
-	   Arguments: &numbullett: the number of bullets of a tank, may be subtracted from
+	   Arguments: &numbullet: the number of bullets of a tank, may be subtracted from
 	   			  if we end up destroying the bullet
 
-	   Returns:
+	   Returns: nothing
 */
 
 int bullet::updateBullet(int &numBullets){
@@ -291,11 +312,11 @@ int bullet::updateBullet(int &numBullets){
 		return 1;
 	}
 
-	if ((millis() - startTime > 2000ul) && (gracePeriod)) {
+	if ((millis() - startTime > 1000ul) && (gracePeriod)) {
 		gracePeriod = false;
 	}
 
-	if (bounce > 2){ // bullet bounced 3 times and shoild be destroyed
+	if (bounce > 2){ // bullet bounced 3 times and should be destroyed
 		active = 0;
 		bounce = 0;
 		tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK);
@@ -304,7 +325,7 @@ int bullet::updateBullet(int &numBullets){
 	}
 
 
-// draws over the old position of the bullet
+	// draws over the old position of the bullet
 	tft.fillCircle(x, y, BULLET_SIZE, TFT_BLACK); 
 
 
@@ -351,18 +372,18 @@ int bullet::updateBullet(int &numBullets){
 
 
 		
-	// communicate with the desktop to see if we have hitn a rectangle
+	// communicate with the desktop to see if we have hit a rectangle
 	char flag = check_xy(x, y);
 
 
-	if (flag == 'S'){
+	if (flag == 'S'){// we hit the left or right side
 		velX *= -1;
 		bounce++;
-	}// we hit the left or right side
-	if (flag == 'T'){	
+	}
+	if (flag == 'T'){// we hit the top or bottom
 		velY *= -1;
 		bounce++;
-	}// we hit the top or bottom
+	}
 
 
 	// finally, update the position of the bullet and draw it

@@ -1,3 +1,11 @@
+
+
+/* 
+This file contains all code that is being run on the desktop.
+*/
+
+
+
 #include <iostream>
 #include "serialport.h"
 #include <string>
@@ -13,25 +21,6 @@
 SerialPort Serial("/dev/ttyACM0");
 
 
-/*
-       Description: tells the arduino how we want to move the desktop square
-       Arguments: none
-
-       Returns: none
-*/
-int sendMovement(){
-    char c;
-    read( fileno( stdin ), &c, 1 ); //THIS LINE WAS ALSO NOT MADE BY US
-    cout << c << endl;
-    Serial.writeline("M");
-    if (c == 'w'){Serial.writeline("w");}
-    else if (c == 'a'){Serial.writeline("a");}
-    else if (c == 's'){Serial.writeline("s");}
-    else if (c == 'd'){Serial.writeline("d");}
-
-    else if (c == 'k'){return 1;}
-    return 0;
-}
 
 
 // structure for a point on the edge of a rectangle
@@ -119,9 +108,37 @@ struct rectangle
 };
 
 
+
+
+/*
+       Description: tells the arduino how we want to move the desktop square
+       Arguments: none
+
+       Returns: none
+*/
+int sendMovement(){
+    char c;
+    read( fileno( stdin ), &c, 1 ); //THIS LINE WAS NOT MADE BY US, it reads in input
+                                    // and stores it in c
+    cout << c << endl;
+    Serial.writeline("M");
+    // send movement to arduino
+    if (c == 'w'){Serial.writeline("w");}
+    else if (c == 'a'){Serial.writeline("a");}
+    else if (c == 's'){Serial.writeline("s");}
+    else if (c == 'd'){Serial.writeline("d");}
+
+    return 0;
+}
+
+
+
+
 /*
        Description: tells the arduino to draw a rectangle
        Arguments: rect: contains information about the rectangle we want to draw
+                  archive: the set that will contain all invalid points, i.e points on the
+                           edge of teh rectangle
 
        Returns: nothing
 */
@@ -129,60 +146,69 @@ struct rectangle
 void setup_rectangle(rectangle rect, unordered_set<point> &archive){
 
 
-    // send rectangle information
+    // send rectangle information to arduino
 
     Serial.writeline("R");
     Serial.writeline(to_string(rect.xo) + ", " + to_string(rect.yo)
                     + ", " + to_string(rect.width) + ", " + to_string(rect.length) + "\n");
+
     
     // now we need to put the points on the bountry of the rectangle into a set so we can
     // tell the arduino if a bullet has hit the rectangle
 
-    point p; // will hold info about points we wanna store in the set
+    point p; // will hold info about a point we wanna store in the set
 
     //top and bottom points
     for (int i = 0; i <= rect.width; i++){
-        for (int j = 0; j < 5; j++){
-            p.face = "T";
+        // inner loop is due to the fact that the bullets jump 5 pixels
+        // each time they move, se we must account for cases when the bullet jumps inside
+        // the rectangles
+        for (int j = -3; j <= 20; j++){
+            p.face = "T"; 
+
+            // add points on the top
             p.y = rect.yo + j;
             p.x = rect.xo + i;
             archive.insert(p);
+            //add points on the bottom
             p.y = rect.yo + rect.length - j;
             archive.insert(p);
         }
     }
     // left and right points
-    for (int i = 0; i < rect.length; i++){
-        // inner loop is due to the fact that the bullets jump 5 pixels
-        // each time they move, se we must account for cases when the bullet jumps inside
-        // the rectangles
-        for (int j = 0; j < 5; j++){
+    for (int i = 0; i <= rect.length; i++){
+
+        for (int j = -3; j <= 20; j++){
 
             p.face = "S";
+
+            // add point on left side
             p.y = rect.yo + i;
             p.x = rect.xo + j;
             archive.insert(p);
-            //cout  << "LEFT POINT "<< p.x << "," << p.y << endl;
 
+            // add point on left side
             p.x = rect.xo + rect.width - j;
             archive.insert(p);
-            //cout << "RIGHT POINT " <<  p.x << "," << p.y << endl;
         }
 
 
 
     }
 
+    // before we exit the function  we wait for a message from the
+    // arduino telling us it has drawn the rectangle. This is so we do
+    // not overflow the serial buffer
     while(1){
-        string cont = Serial.readline();
-        cout << "waiting" << endl;
-        if (cont[0] == 'D'){
-            cout << "done" << endl;
+        string msg = Serial.readline();
+        if (msg[0] == 'D'){ // the message we are looking for
             break;
         }
     }
      
 }
+
+
 /*
        Description: tells the arduino if it has hit a rectangle or not
        Arguments: arduinoPoint: the message sent the the arduino containingthe point
@@ -202,20 +228,20 @@ void check_point(string arduinoPoint, unordered_set<point> &archive){
 
     point pCheck(stoi(xStr), stoi(yStr)); // will be used to check the set
 
-    // checking set:
+    // checking set for point
     auto iter = archive.find(pCheck);
     if (iter != archive.end()){ // point is not valid
         pCheck = *iter;
         Serial.writeline("N" + pCheck.face);
     }
-    else{
+    else{// point is valid
         Serial.writeline("V");
     }
 }
 
 
 int main(){
-    // only start once the arduino is ready to recive input
+    // only start once the arduino has told us it is ready to receive input
     while(1){
         string flag = Serial.readline();
         if (flag == "Y\n"){
@@ -226,7 +252,8 @@ int main(){
 
     unordered_set<point> archive; // will to store any invalid points
 
-    rectangle rect1(120, 20, 20, 80);
+    // setting up rectangles
+    rectangle rect1(100, 20, 20, 80);
     rectangle rect2(360, 20, 20, 80);
     rectangle rect3(120, 200, 20, 80);
     rectangle rect4(360, 200, 20, 80);
@@ -236,10 +263,9 @@ int main(){
     setup_rectangle(rect3, archive);
     setup_rectangle(rect4, archive);
 
-    
 
     
-
+    // telling adruino we are done setting up rectangles
     Serial.writeline("F");
     cout << "F" << endl;
 
@@ -263,15 +289,15 @@ int main(){
         // END OF CODE NOT MADE BY US
 
         
-        string flag = Serial.readline();
+        string flag = Serial.readline();// see if the arduino has sent us anything
         if (flag[0] == 'P'){ // arduino has sent us a point to check
             check_point(flag, archive);
         }
-        if( res > 0 )
+        if( res > 0 )// if we enter somthing in the keyboard, tell the arduino how
+                     // to move its square
         {
-        
-            bool exit = sendMovement();
-            if (exit){return 0;}
+            
+            sendMovement();
             
         }
     }

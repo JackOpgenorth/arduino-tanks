@@ -1,8 +1,16 @@
+/*
+This file contains the declarations for the two structs, tank and bullet, and all their methods
+everything is implemented in bull_tank.cpp
+*/
+
+
 #ifndef _BUllTANK_H
 #define _BULLTANK_H
 #include <MCUFRIEND_kbv.h>
 #include <TouchScreen.h>
 
+
+// from major assignment 2
 #define YP A3 // must be an analog pin, use "An" notation!
 #define XM A2 // must be an analog pin, use "An" notation!
 #define YM 9  // can be a digital pin

@@ -1,3 +1,11 @@
+/* 
+This file contains all the code that is being executed on the arduino.
+*/ 
+
+
+
+// most constants and files included below were copied from major assignment 2
+
 #include <Arduino.h>
 #include "bull_tank.h"
 // core graphics library (written by Adafruit)
