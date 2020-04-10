@@ -136,7 +136,20 @@ void tank::ardiUpdate(){
 	}
 
 
+	// communicate with the desktop to see if we have hitn a rectangle
+	char flag = check_xy(x, y);
+
+
+	if (flag == 'S'){
+		x = oldX;
+	}// we hit the left or right side
+	if (flag == 'T'){	
+		y = oldY;
+	}// we hit the top or bottom
+
+
 	check_boundries(x, y); // make sure we have not hit the top or bottom
+	constrain(x, 0, 240);	// keep x on left side of screen
 
 	// redrawing patch at old position.
 	if (moving){
@@ -182,6 +195,24 @@ void tank::desktopUpdate(char direction){
 	if (direction == 'a'){
 		x -= 5;
 	}
+
+	// communicate with the desktop to see if we have hitn a rectangle
+	char flag = check_xy(x, y);
+
+
+	if (flag == 'S'){
+		x = oldX;
+	}// we hit the left or right side
+	if (flag == 'T'){	
+		y = oldY;
+	}// we hit the top or bottom
+
+
+
+
+	constrain(x, 240, 480);
+	constrain(y, 0, 320);
+
 
 	redrawCursor(TFT_BLACK, oldX, oldY); 
 
@@ -234,7 +265,7 @@ void bullet::checkCollision(struct tank &tankYou) {
 			this->active = 0;
 			this->bounce = 0;
 			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
-			//tankYou.bullets--; // this will go to whatever tank shot the bullet
+			tankYou.bullets--; // this will go to whatever tank shot the bullet
 
 			// for if we want bullets to keep going
 			//this->gracePeriod = true;
@@ -344,6 +375,9 @@ void bullet::fire(int tapX, int tapY){
 	float vecX = tapX - x;
 	float vecY = -1*(tapY - y);
 
+	gracePeriod = true;
+	active=1;
+
 
 	tft.fillRect(260, 160, 80, 80, TFT_BLACK);
 
@@ -385,4 +419,18 @@ void bullet::fire(int tapX, int tapY){
 
 	velX = 5*cos(radAng);
 	velY = -5*sin(radAng);
+}
+
+
+
+rectCoords::rectCoords() {
+
+	x1 = 0;
+	y1 = 0;
+	x2 = 0;
+	y2 = 0;
+	x3 = 0;
+	y3 = 0;
+	x4 = 0;
+	y4 = 0;
 }

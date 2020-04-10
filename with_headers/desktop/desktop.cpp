@@ -10,7 +10,7 @@
 #include <termios.h>
 #include <unordered_set>
 
-SerialPort Serial("/dev/ttyACM1");
+SerialPort Serial("/dev/ttyACM0");
 
 
 /*

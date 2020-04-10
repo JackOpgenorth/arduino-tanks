@@ -42,11 +42,30 @@ struct bullet
 
 	bullet(int inputx, int inputy);
 
-	void checkCollision(struct tank tankYou);
+	void checkCollision(struct tank &tankYou);
 
 	int updateBullet(int &numBullets);
 
 	void fire(int tapX, int tapY);
+};
+
+
+/*
+
+				(x1, y1)					(x2, y2)
+
+
+				(x3, y3)					(x4, y4)
+
+*/
+struct rectCoords
+{
+
+	int x1, y1, x2, y2, x3, y3, x4, y4;
+
+	rectCoords();
+
+
 };
 
 

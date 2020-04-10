@@ -125,10 +125,10 @@ void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 
 	if (ard_tank.deaths != ard_tank.old_deaths) {
 
-		tft.fillRect(210, 0, 30, 25, TFT_RED);
+		tft.fillRect(240, 0, 30, 25, TFT_RED);
 
 		//arduino score
-		tft.setCursor(212, 3);
+		tft.setCursor(248, 3);
 		tft.print(ard_tank.deaths);
 
 		ard_tank.old_deaths = ard_tank.deaths;
@@ -137,10 +137,10 @@ void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 
 	if (desk_tank.deaths != desk_tank.old_deaths) {
 
-		tft.fillRect(240, 0, 30, 25, TFT_RED);
+		tft.fillRect(210, 0, 30, 25, TFT_RED);
 
 		//desktop score
-		tft.setCursor(248, 3);
+		tft.setCursor(212, 3);
 		tft.print(desk_tank.deaths);
 
 		desk_tank.old_deaths = desk_tank.deaths;
@@ -182,7 +182,7 @@ bool check_boundries(int &x, int &y){
 }
 
 
-void process_shot(int touchX, int touchY, tank &Atank, bullet bulls[], int &cooldown){
+void process_shot(int touchX, int touchY, tank &Atank, bullet *bulls, int &cooldown){
 	if (Atank.bullets >= 2 ||  millis() - cooldown < 1000){return;}
 	bullet bull = bulls[Atank.bullets];
 
