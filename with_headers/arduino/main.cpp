@@ -118,7 +118,7 @@ void setup(){
 
 
 
-void displayScores(struct tank ard_tank, struct tank desk_tank) {
+void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 
 	tft.setTextColor(TFT_BLACK);
 	tft.setTextSize(3);
@@ -131,6 +131,8 @@ void displayScores(struct tank ard_tank, struct tank desk_tank) {
 		tft.setCursor(212, 3);
 		tft.print(ard_tank.deaths);
 
+		ard_tank.old_deaths = ard_tank.deaths;
+
 	}
 
 	if (desk_tank.deaths != desk_tank.old_deaths) {
@@ -140,6 +142,8 @@ void displayScores(struct tank ard_tank, struct tank desk_tank) {
 		//desktop score
 		tft.setCursor(248, 3);
 		tft.print(desk_tank.deaths);
+
+		desk_tank.old_deaths = desk_tank.deaths;
 	}
 }
 

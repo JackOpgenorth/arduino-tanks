@@ -215,7 +215,7 @@ bullet::bullet(int inputx, int inputy){
 
 
 
-void bullet::checkCollision(struct tank tankYou) {
+void bullet::checkCollision(struct tank &tankYou) {
 			/*
 		tft.fillRect(80, 100, CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
 
@@ -224,17 +224,21 @@ void bullet::checkCollision(struct tank tankYou) {
 		tft.setTextSize(2);
 		tft.print(gracePeriod);
 		*/
-		if (((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) && !(gracePeriod)) {
+		if (((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) && !(gracePeriod) && (active == 1)) {
 
 			tft.fillRect(tankYou.x - CURSOR_SIZE, tankYou.y - CURSOR_SIZE, 2*CURSOR_SIZE, 2*CURSOR_SIZE, TFT_BLUE);
 
 			tankYou.deaths++;
 
-			tft.setCursor(60, 260);
-			tft.setTextColor(TFT_BLUE);
-			tft.setTextSize(2);
+			// destroy bullet
+			this->active = 0;
+			this->bounce = 0;
+			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
+			//tankYou.bullets--; // this will go to whatever tank shot the bullet
 
-			tft.print(tankYou.deaths);
+			// for if we want bullets to keep going
+			//this->gracePeriod = true;
+			//this->startTime = millis();
 
 	}
 }
@@ -342,6 +346,10 @@ void bullet::fire(int tapX, int tapY){
 
 
 	tft.fillRect(260, 160, 80, 80, TFT_BLACK);
+
+	
+	// for grace period
+	startTime = millis();
 
 	// for grace period
 	startTime = millis();
