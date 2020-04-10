@@ -36,13 +36,14 @@ struct tank
 struct bullet
 {
 	bool active; // 0 means the bullet is not supposed to be on the screen
-	int x, y, velX, velY, startTime;
+	int x, y, velX, velY;
+	unsigned long startTime;
 	int bounce; // if a bullet bounces twice, we get rid of it
 	bool gracePeriod;
 
 	bullet(int inputx, int inputy);
 
-	void checkCollision(struct tank &tankYou);
+	void checkCollision(struct tank &tankYou, int &numBulls);
 
 	int updateBullet(int &numBullets);
 

@@ -182,6 +182,7 @@ bool check_boundries(int &x, int &y){
 }
 
 
+
 void process_shot(int touchX, int touchY, tank &Atank, bullet *bulls, int &cooldown){
 	if (Atank.bullets >= 2 ||  millis() - cooldown < 1000){return;}
 	bullet bull = bulls[Atank.bullets];
@@ -192,6 +193,7 @@ void process_shot(int touchX, int touchY, tank &Atank, bullet *bulls, int &coold
 	bull.fire(touchX, touchY);
 
 	bulls[Atank.bullets] = bull;
+	bulls[Atank.bullets].gracePeriod = true;
 
 	Atank.bullets += 1;
 	cooldown = millis();
@@ -413,12 +415,12 @@ int main(){
 			displayScores(thisTank, deskTank);
 
 			//arduino tank
-			ardiBull[i].checkCollision(thisTank);
-			deskBull[i].checkCollision(thisTank);
+			ardiBull[i].checkCollision(thisTank, thisTank.bullets);
+			deskBull[i].checkCollision(thisTank, deskTank.bullets);
 
 			//desktop tank
-			ardiBull[i].checkCollision(deskTank);
-			deskBull[i].checkCollision(deskTank);
+			ardiBull[i].checkCollision(deskTank, thisTank.bullets);
+			deskBull[i].checkCollision(deskTank, deskTank.bullets);
 		}
 	}
 }
