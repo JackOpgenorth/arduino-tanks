@@ -103,7 +103,7 @@ void setup(){
 	tft.fillRect(210, 0, 60, 25, TFT_RED);
 
 	//arduino score box
-	tft.setCursor(212, 3);
+	tft.setCursor(217, 3);
 	tft.print(0);
 
 	//desktop score box
@@ -126,7 +126,7 @@ void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 	tft.setTextSize(3);
 
 	// only change desktop tank score if it has changed
-	if (ard_tank.deaths != ard_tank.old_deaths) {
+	if ((ard_tank.deaths != ard_tank.old_deaths) && (ard_tank.deaths < 10)) {
 
 		tft.fillRect(240, 0, 30, 25, TFT_RED);
 
@@ -138,22 +138,45 @@ void displayScores(struct tank &ard_tank, struct tank &desk_tank) {
 		ard_tank.old_deaths = ard_tank.deaths;
 	}
 
+	// only change desktop tank score if it has changed, score 10+
+	else if (ard_tank.deaths != ard_tank.old_deaths) {
+
+		tft.fillRect(240, 0, 45, 25, TFT_RED);
+
+		//arduino score
+		tft.setCursor(248, 3);
+		tft.print(ard_tank.deaths);
+
+		// reset old death value
+		ard_tank.old_deaths = ard_tank.deaths;
+	}
+
 	// only change arduino tank score if has changed
-	if (desk_tank.deaths != desk_tank.old_deaths) {
+	if ((desk_tank.deaths != desk_tank.old_deaths) && (desk_tank.deaths < 10)) {
 
 		tft.fillRect(210, 0, 30, 25, TFT_RED);
 
 		//desktop score
-		tft.setCursor(212, 3);
+		tft.setCursor(217, 3);
+		tft.print(desk_tank.deaths);
+
+		// reset old death value
+		desk_tank.old_deaths = desk_tank.deaths;
+	}
+
+	// only change arduino tank score if has changed, score 10+
+	if (desk_tank.deaths != desk_tank.old_deaths) {
+
+		tft.fillRect(195, 0, 45, 25, TFT_RED);
+
+		//desktop score
+		tft.setCursor(200, 3);
 		tft.print(desk_tank.deaths);
 
 		// reset old death value
 		desk_tank.old_deaths = desk_tank.deaths;
 	}
 }
-
-
-
 
 
 /*
@@ -302,11 +325,8 @@ void wait_for_rectangles(){
 			if (incoming == 'F' || millis() - timeout > 2000){// desktop says its done sending reactangles
 				break;
 			}
-
 		}
 	}
-
-
 }
 
 
@@ -378,7 +398,7 @@ int main(){
 
  	bullet deskBull[2] = 
  	{
-  		bullet(20, 20),
+  	bullet(20, 20),
  		bullet(20, 20)
 
  	};

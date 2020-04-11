@@ -137,7 +137,7 @@ void tank::ardiUpdate(){
 		moving = true;
 	}
 
-// remember the x-reading increases as we push left
+	// remember the x-reading increases as we push left
 
 
 	if (xVal > JOY_CENTER + JOY_DEADZONE) {
@@ -248,18 +248,15 @@ bullet::bullet(int inputx, int inputy){
 
 
 /*
-	First tank is tank bullet collided with, second inputted tank is orgin of bullet
-
+	Description: Checks if the current bullet has collided with a tank. If the bullet is within
+				a range of the tank, and it is both active and not in its grace period, it will stop
+				doing bullet stuff. The death count of the tank will also increment
+	Arguments: tankYou: the tank object that the bullet may have collided with; numBulls: the
+				number of bullets in the tank that fired this bullet
+	Outputs: none
 */
 void bullet::checkCollision(struct tank &tankYou, int &numBulls) {
-			/*
-		tft.fillRect(80, 100, CURSOR_SIZE, CURSOR_SIZE, TFT_BLACK);
 
-		tft.setCursor(80, 100);
-		tft.setTextColor(TFT_BLUE);
-		tft.setTextSize(2);
-		tft.print(gracePeriod);
-		*/
 		if (((x < tankYou.x +5) && (x > tankYou.x -5) && (y < tankYou.y +5) && (y > tankYou.y -5)) && !(gracePeriod) && (active == 1)) {
 
 			tft.fillRect(tankYou.x - CURSOR_SIZE, tankYou.y - CURSOR_SIZE, 2*CURSOR_SIZE, 2*CURSOR_SIZE, TFT_BLUE);
@@ -271,11 +268,6 @@ void bullet::checkCollision(struct tank &tankYou, int &numBulls) {
 			this->bounce = 0;
 			tft.fillCircle(x, y, BULLET_SIZE, TFT_BLUE);
 			numBulls--; // this will go to whatever tank shot the bullet
-
-			// for if we want bullets to keep going
-			//this->gracePeriod = true;
-			//this->startTime = millis();
-
 	}
 }
 
@@ -351,8 +343,6 @@ int bullet::updateBullet(int &numBullets){
 		velX *= -1;
 		bounce++;
 	}
-
-
 		
 	// communicate with the desktop to see if we have hit a rectangle
 	char flag = check_xy(x, y);
@@ -367,7 +357,6 @@ int bullet::updateBullet(int &numBullets){
 		bounce++;
 	}
 
-
 	// finally, update the position of the bullet and draw it
 	x += velX;
 	y += velY;
@@ -376,23 +365,28 @@ int bullet::updateBullet(int &numBullets){
 }
 
 
+/*
+	Description: enacts bullet firing. Sets velocity and location based on screen tap
+				and tank location. 
+	Arguments: tapX: the x-coord of screen tap; tapY: the y-coord of screen tap
+	Outputs: none
 
+*/
 void bullet::fire(int tapX, int tapY){
 	float vecX = tapX - x;
 	float vecY = -1*(tapY - y);
 
 	gracePeriod = true; // so the tank doesen't shoot itself when it fires
 
-
 	tft.fillRect(260, 160, 80, 80, TFT_BLACK);
 
-	
 	// for grace period
 	startTime = millis();
 
 	// angle
 	float radAng = atan(vecY/vecX);
 
+	// ajust for arctan's lack of direction
 	if (   (vecY > 0 && vecX < 0) ){
 		radAng += 3.14;
 	}
