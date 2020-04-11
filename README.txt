@@ -4,6 +4,8 @@ CMPUT 275 Wi20
 
 Final project: Arduino tanks
 
+Link to demo video: https://drive.google.com/open?id=190taNcj_monqvdvsLX8RM7brGPyq1hDs
+
 Included files:
 	arduino/ containing:
 		main.cpp
