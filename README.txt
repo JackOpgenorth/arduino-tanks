@@ -9,6 +9,8 @@ Included files:
 		main.cpp
 		bull_tank.cpp
 		bull_tank.h
+		lcd_image.cpp
+		lcd_image.h
 		Makefile
 	Desktop/ containing:
 		desktop.cpp
@@ -44,7 +46,7 @@ Running Instructions:
 
 Notes and Assumptions:
 	Due to the pandemic, we were unable to meet up and could not implement
-'	the arduino-arduino communication aspect of our project. This was replaced with
+	the arduino-arduino communication aspect of our project. This was replaced with
 	desktop-arduino communication
 
 	To make it so we could have keyboard input without pressing enter, some code was taken off the internet
@@ -53,9 +55,6 @@ Notes and Assumptions:
 	and also in desktop.cpp, where it is used
 
 	As mention in the Instructions, a tank shoots only if you tap the opposite side of the screen from where it started.
-
-
-
-
-	
+	The left tank is controlled via the joystick, and the right tank is controlled with wasd via the terminal where
+	./desktop is running.
 
