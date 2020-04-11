@@ -11,8 +11,6 @@ Included files:
 		main.cpp
 		bull_tank.cpp
 		bull_tank.h
-		lcd_image.cpp
-		lcd_image.h
 		Makefile
 	Desktop/ containing:
 		desktop.cpp
