@@ -18,7 +18,7 @@ This file contains all code that is being run on the desktop.
 #include <termios.h>
 #include <unordered_set>
 
-SerialPort Serial("/dev/ttyACM1");
+SerialPort Serial("/dev/ttyACM0");
 
 
 
@@ -98,7 +98,8 @@ struct pcompare
 // contains infomation about a rectangle that will be drawn by the arduino
 struct rectangle
 {
-    uint32_t xo, yo, width, length;
+    uint32_t xo, yo, width, length; //xo and yo are the coordinates of the upper left hand
+                                    // corner of the rectangle
     rectangle(int x, int y, int w, int l) {
         xo = x,
         yo = y;
@@ -106,8 +107,6 @@ struct rectangle
         length = l;
     }
 };
-
-
 
 
 /*
@@ -136,9 +135,9 @@ int sendMovement(){
 
 /*
        Description: tells the arduino to draw a rectangle
-       Arguments: rect: contains information about the rectangle we want to draw
-                  archive: the set that will contain all invalid points, i.e points on the
-                           edge of teh rectangle
+       Arguments: rect: Contains information about the rectangle we want to draw
+                  archive: The set that will contain all invalid points, i.e points on the
+                           edge of the rectangle
 
        Returns: nothing
 */
@@ -153,7 +152,7 @@ void setup_rectangle(rectangle rect, unordered_set<point> &archive){
                     + ", " + to_string(rect.width) + ", " + to_string(rect.length) + "\n");
 
     
-    // now we need to put the points on the bountry of the rectangle into a set so we can
+    // now we need to put the points on the bountry of the rectangle into a unordered set so we can
     // tell the arduino if a bullet has hit the rectangle
 
     point p; // will hold info about a point we wanna store in the set
@@ -210,9 +209,10 @@ void setup_rectangle(rectangle rect, unordered_set<point> &archive){
 
 
 /*
-       Description: tells the arduino if it has hit a rectangle or not
-       Arguments: arduinoPoint: the message sent the the arduino containingthe point
-                  archive: set containging all invalid points
+       Description: Reads in a point from the arduino and tells the 
+                    arduino if the point was valid or not. (i.e is it on the edge of a rectangle)
+       Arguments: arduinoPoint: the message sent the the arduino containing the point
+                  archive: unordered set containging all invalid points
 
        Returns: nothing
 */
@@ -244,13 +244,13 @@ int main(){
     // only start once the arduino has told us it is ready to receive input
     while(1){
         string flag = Serial.readline();
-        if (flag == "Y\n"){
+        if (flag == "Y\n"){// arduino is ready
             break;
         }
     }
 
 
-    unordered_set<point> archive; // will to store any invalid points
+    unordered_set<point> archive; // used to store any invalid points
 
     // setting up rectangles
     rectangle rect1(100, 20, 20, 80);
@@ -267,7 +267,6 @@ int main(){
     
     // telling adruino we are done setting up rectangles
     Serial.writeline("F");
-    cout << "F" << endl;
 
     // BEGINNING OF CODE NOT MADE BY US
     struct termios oldSettings, newSettings;

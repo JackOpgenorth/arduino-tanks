@@ -59,18 +59,10 @@ extern TouchScreen ts;
 
 lcd_image_t backImage = {"yeg-big.lcd", BACK_WIDTH, BACK_HEIGHT};
 
-/*void redrawCursor(uint16_t colour, int x, int y);*/
 
 
-//forward declaration of a few functions is needed
 
-void testing(char message[]){
-	tft.setCursor(160, 160);
-	tft.setTextColor(TFT_BLUE);
-	tft.setTextSize(2);
-	tft.print(message);
-}
-
+// much of the setup function is what was used in the major assignments
 
 void setup(){
 	init();
@@ -283,7 +275,7 @@ void readRect(){
 
 
 /*
-   Description: waits for the desktop to signal it is about to send a rectangle;
+   Description: reads in rectangles from the desktop until it is done sending rectangles
    Arguments: none
 
 
@@ -295,7 +287,7 @@ void wait_for_rectangles(){
 	char incoming;
 	//Serial.println(Serial.available());
 
-	unsigned long timeout= millis();
+	unsigned long timeout = millis();
 	while (waiting){ // keep waiting until we get a signal from the desktop
 		if (Serial.available()){
 
@@ -322,7 +314,7 @@ void wait_for_rectangles(){
  Description: sends info about a point to the desktop, which then tells the arduino 
  				wheather or not this is a "valid" point. (i.e have we just crashed into a 
  				rectangle)
- Arguments: x: x position we want to check
+ Arguments:   x: x position we want to check
  			  y: y position we want to check
 
 
@@ -343,7 +335,7 @@ char check_xy(int x, int y){
 			if (incoming == 'V'){// point is valid
 				return incoming;
 			}
-			else if (incoming == 'N'){// point is nbot valid
+			else if (incoming == 'N'){// point is not valid
 
 				// need to wait just a split second until we are ready to read
 				// in the next part of the message
@@ -363,41 +355,38 @@ char check_xy(int x, int y){
 
 int main(){
 	setup();
+
 	// let the desktop know we are ready
 	Serial.println("Y\n");
 
 	wait_for_rectangles();// read in and draw all the rectangles
 	
-	// get squares ready
+	// get tanks ready
 	tank thisTank(50,150);
 	tank deskTank(300, 150);
 
 
 	// get bullets ready
 	int ardiCooldown = 0, deskCooldown = 0;
- 	bullet ardiBull[5] =
+ 	bullet ardiBull[2] =
  	{
  		bullet(20, 20), // the starting position of the bullets don't actually matter
- 		bullet(20, 20),
- 		bullet(20, 20),
- 		bullet(20, 20),
  		bullet(20, 20)
+
 
  	};
 
- 	bullet deskBull[5] = 
+ 	bullet deskBull[2] = 
  	{
-  	bullet(20, 20),
- 		bullet(20, 20),
- 		bullet(20, 20),
- 		bullet(20, 20),
- 		bullet(20, 20)	
+  		bullet(20, 20),
+ 		bullet(20, 20)
+
  	};
 
  	// main loop
 	while(1){
 
-		thisTank.ardiUpdate(); // moves the arduino's square according to jo
+		thisTank.ardiUpdate(); // moves the arduino's square according to joystick
 
 		if (Serial.available()){// check if desktop is sending somthing
 			char incoming = Serial.read();
@@ -407,25 +396,27 @@ int main(){
 			}	
 		}
 
+
 		TSPoint touch = ts.getPoint();
 		pinMode(YP, OUTPUT);
 		pinMode(XM, OUTPUT);
 
-		if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE )){
+		if ( (touch.z > MINPRESSURE && touch.z < MAXPRESSURE )){// screen is touched
 			int touchX = map(touch.y, TS_MINX, TS_MAXX, DISPLAY_WIDTH - 1, 0);
 			int touchY = map(touch.x, TS_MINY, TS_MAXY, DISPLAY_HEIGHT - 1, 0);
 
-			if (touchX > DISPLAY_WIDTH/2){
+			if (touchX > DISPLAY_WIDTH/2){// left side, arduino fires
 				process_shot(touchX, touchY, thisTank, ardiBull, ardiCooldown);
 			}
-			else if (touchX < DISPLAY_WIDTH/2){
+			else if (touchX < DISPLAY_WIDTH/2){// right side, desktop fires
 				process_shot(touchX, touchY, deskTank, deskBull, deskCooldown);
 			}
 
 		}
 
 
-		for (int i = 0; i < 5; i++){//update all the bullets
+		for (int i = 0; i < 2; i++){
+			//update all the bullets
 			ardiBull[i].updateBullet(thisTank.bullets);
 			deskBull[i].updateBullet(deskTank.bullets);
 

@@ -152,19 +152,20 @@ void tank::ardiUpdate(){
 	}
 
 
-	// communicate with the desktop to see if we have hitn a rectangle
+	// communicate with the desktop to see if we have hit a rectangle
 	char flag = check_xy(x, y);
 
 
 	if (flag == 'S'){
 		x = oldX;
-	}// we hit the left or right side
+	}// we hit the left or right side of
 	if (flag == 'T'){	
 		y = oldY;
 	}// we hit the top or bottom
 
 
-	check_boundries(x, y); // make sure we have not hit the top or bottom
+	check_boundries(x, y); // make sure we have not hit the top or bottom of the screen
+
 	if ((0 > x) || (240 < x + 5)) {x = oldX; }	// keep x on left side of screen
 
 	
@@ -182,9 +183,10 @@ void tank::ardiUpdate(){
 
 
 /*
-	   Description: Updates information for the desktop square according to keyboard input from
-	   				the desktop
+	   Description: Updates information for the desktop square according to keyboard input
+
 	   Arguments: direction: determines which way the square will move, will be w, a, s, or d
+
 	   Returns: none
 */
 void tank::desktopUpdate(char direction){
@@ -219,8 +221,8 @@ void tank::desktopUpdate(char direction){
 
 
 
-	if (245 > x) {x = oldX; }
-	constrain(y, 0, 320);
+	if (245 > x) {x = oldX; }// keep on right side of screen;
+	y = constrain(y, 0, 320);
 
 	redrawCursor(TFT_BLACK, oldX, oldY); 
 	redrawCursor(TFT_RED, x, y); 
@@ -379,7 +381,7 @@ void bullet::fire(int tapX, int tapY){
 	float vecX = tapX - x;
 	float vecY = -1*(tapY - y);
 
-	gracePeriod = true;
+	gracePeriod = true; // so the tank doesen't shoot itself when it fires
 
 
 	tft.fillRect(260, 160, 80, 80, TFT_BLACK);
