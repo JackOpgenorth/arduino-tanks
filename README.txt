@@ -4,7 +4,7 @@ CMPUT 275 Wi20
 
 Final project: Arduino tanks
 
-Link to demo video: https://drive.google.com/open?id=19IUG-hTcyZ75QWd8XcDxRWwPYjO3pQDP
+Link to demo video:
 
 Included files:
 	arduino/ containing:
@@ -39,10 +39,10 @@ Wiring Instructions:
 Running Instructions:
 	1. Have one terminal open in the desktop directory and one open in the arduino directory
 	2. Compile the desktop executable by typing "make" into the desktop terminal
-	3. Compile and upload the arduino program by typing "make upload" in the arduino terminal (Make sure this is done BEFORE the 		   desktop executable is run)
+	3. Compile and upload the arduino program by typing "make upload" in the arduino terminal (Make sure this is done BEFORE 		   the desktop executable is run)
 	4. Run the desktop executable by typing "./desktop" in the desktop terminal
-	5. Begin inputting by moving the joystick and tapping the screen. To make a tank shoot, tap the opposite side of the screen from 	    where it started
-	6. To stop running the program, use ctrl-c to kill the desktop program like you usually would. It takes a few seconds but it 		   will stop. 
+	5. Begin inputting by moving the joystick and tapping the screen. To make a tank shoot, tap the opposite side of the screen 		   from where it started
+	6. To stop running the program, use ctrl-c to kill the desktop program like you usually would. It takes a few seconds but 	     it will stop. 
 
 Notes and Assumptions:
 	Due to the pandemic, we were unable to meet up and could not implement
@@ -58,3 +58,4 @@ Notes and Assumptions:
 	The left tank is controlled via the joystick, and the right tank is controlled with wasd via the terminal where
 	./desktop is running.
 
+	serialport.cpp are serialport.h were taken from major assignment 2.
